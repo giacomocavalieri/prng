@@ -29,6 +29,7 @@ pub fn unsigned_shift_right(number: Int, by shift: Int) -> Int {
   remaining
 }
 
+@external(javascript, "../../ffi.mjs", "xor")
 pub fn xor(one: Int, other: Int) -> Int {
   truncate(bitwise.exclusive_or(one, other))
 }

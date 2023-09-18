@@ -96,6 +96,26 @@ pub fn constant(value: a) -> Generator(a) {
   #(value, seed)
 }
 
+pub fn list(from generator: Generator(a), of length: Int) -> Generator(List(a)) {
+  use seed <- Generator
+  do_list([], seed, generator, length)
+}
+
+fn do_list(
+  acc: List(a),
+  seed: Seed,
+  generator: Generator(a),
+  length: Int,
+) -> #(List(a), Seed) {
+  case length <= 0 {
+    True -> #(acc, seed)
+    False -> {
+      let #(value, seed) = generator.step(seed)
+      do_list([value, ..acc], seed, generator, length - 1)
+    }
+  }
+}
+
 // --- GENERIC UTILITY FUNCTIONS ---
 
 fn is_power_of_two(number: Int) -> Bool {

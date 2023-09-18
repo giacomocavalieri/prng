@@ -5,3 +5,7 @@ export function truncate(number) {
 export function unsigned_shift_right(number, by) {
     return number >>> by
 }
+
+export function xor(a, b) {
+    return a ^ b
+}
