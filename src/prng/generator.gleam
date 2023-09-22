@@ -19,7 +19,7 @@ pub fn int(from: Int, to: Int) -> Generator(Int) {
   random_int(seed, low, high)
 }
 
-@external(erlang, "../ffi.erlang", "random_int")
+@external(erlang, "ffi", "random_int")
 @external(javascript, "../ffi.mjs", "random_int")
 fn random_int(seed: Seed, low: Int, high: Int) -> #(Int, Seed)
 
