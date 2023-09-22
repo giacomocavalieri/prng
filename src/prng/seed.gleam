@@ -1,31 +1,9 @@
-import gleam/int
-import prng/internals/int_32
+pub type Seed
 
-pub opaque type Seed {
-  Seed(state: Int, step: Int)
-}
+@external(erlang, "../ffi.erlang", "seed_to_int")
+@external(javascript, "../ffi.mjs", "seed_to_int")
+pub fn to_int(seed: Seed) -> Int
 
-pub fn next(seed: Seed) -> Seed {
-  let Seed(state, step) = seed
-  let state = int_32.truncate(state * 1_664_525 + step)
-  Seed(state, step)
-}
-
-pub fn to_int(seed: Seed) -> Int {
-  let Seed(state, ..) = seed
-  let word =
-    { int_32.unsigned_shift_right(state, by: 28) + 4 }
-    |> int_32.unsigned_shift_right(state, by: _)
-    |> int_32.xor(state, _)
-    |> int.multiply(277_803_737)
-
-  int_32.unsigned_shift_right(word, by: 22)
-  |> int_32.xor(word)
-  |> int_32.truncate
-}
-
-pub fn new(from: Int) -> Seed {
-  let Seed(state, step) = next(Seed(0, 1_013_904_223))
-  let state = int_32.truncate(state + from)
-  next(Seed(state, step))
-}
+@external(erlang, "../ffi.erlang", "new_seed")
+@external(javascript, "../ffi.mjs", "new_seed")
+pub fn new(int: Int) -> Seed

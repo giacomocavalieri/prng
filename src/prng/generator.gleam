@@ -1,9 +1,6 @@
-import gleam/bitwise
 import gleam/int
 import gleam/order.{Eq, Gt, Lt, Order}
 import gleam/pair
-import gleam/result
-import prng/internals/int_32
 import prng/seed.{Seed}
 
 pub opaque type Generator(a) {
@@ -19,40 +16,12 @@ pub fn step(generator: Generator(a), seed: Seed) -> #(a, Seed) {
 pub fn int(from: Int, to: Int) -> Generator(Int) {
   use seed <- Generator
   let #(low, high) = sort_ascending(from, to, int.compare)
-  let range = high - low + 1
-  case is_power_of_two(range) {
-    True -> fast_path(range, seed)
-    False -> slow_path(range, seed, low)
-  }
+  random_int(seed, low, high)
 }
 
-fn fast_path(range: Int, seed: Seed) -> #(Int, Seed) {
-  let value = int_32.truncate(bitwise.and(range - 1, seed.to_int(seed)))
-  #(value, seed.next(seed))
-}
-
-fn slow_path(range: Int, seed: Seed, low: Int) -> #(Int, Seed) {
-  let threshold =
-    int.remainder(int_32.truncate(-range), by: range)
-    |> result.unwrap(0)
-    |> int_32.truncate()
-
-  account_for_bias(seed, range, threshold, low)
-}
-
-fn account_for_bias(
-  seed: Seed,
-  range: Int,
-  threshold: Int,
-  low: Int,
-) -> #(Int, Seed) {
-  let value = seed.to_int(seed)
-  let seed = seed.next(seed)
-  case value < threshold {
-    True -> account_for_bias(seed, range, threshold, low)
-    False -> #(result.unwrap(int.remainder(value, by: range), 0) + low, seed)
-  }
-}
+@external(erlang, "../ffi.erlang", "random_int")
+@external(javascript, "../ffi.mjs", "random_int")
+fn random_int(seed: Seed, low: Int, high: Int) -> #(Int, Seed)
 
 // --- FIND A NAME FOR THIS ---
 
@@ -117,10 +86,6 @@ fn do_list(
 }
 
 // --- GENERIC UTILITY FUNCTIONS ---
-
-fn is_power_of_two(number: Int) -> Bool {
-  bitwise.and(number - 1, number) == 0
-}
 
 fn sort_ascending(one: a, other: a, with compare: fn(a, a) -> Order) -> #(a, a) {
   case compare(one, other) {
