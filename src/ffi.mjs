@@ -20,14 +20,13 @@ export function seed_to_int(seed) {
 }
 
 export function random_int(seed, low, high) {
-    const range = high - low + 1
-    const is_power_of_2 = (range - 1) & range === 0
+    const range = high - low + 1 // 32
+    const is_power_of_2 = ((range - 1) & range) === 0
     if (is_power_of_2) {
-        const number = ((range - 1) ^ seed_to_int(seed)) >>> 0
+        const number = ((range - 1) & seed_to_int(seed)) >>> 0
         return [number + low, next(seed)]
     } else {
         const threshold = (((-range) >>> 0) % range) >>> 0
-        
         let iteration_seed = seed
         let x = undefined
         do {
