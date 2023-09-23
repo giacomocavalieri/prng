@@ -7,11 +7,9 @@ new_seed(From) ->
     next({State1, Step}).
 
 seed_to_int({State, _Step}) ->
-    ShiftBy = urs(State, 28) + 4,
-    ShiftedState = urs(State, ShiftBy),
-    Xored = expand_to_64(State bxor ShiftedState),
-    Word = trunc(Xored * 277_803_737.0),
-    truncate_32((urs(Word, 22)) bxor Word).
+    ShiftedState = urs(State, urs(State, 28) + 4),
+    Word = trunc(expand_to_64(State bxor ShiftedState) * 277_803_737.0),
+    truncate_32(urs(Word, 22) bxor Word).
 
 random_int(Seed, Low, High) ->
     Range = High - Low + 1,
