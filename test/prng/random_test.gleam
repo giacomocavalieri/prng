@@ -1,5 +1,5 @@
 import gleeunit/should
-import prng/generator
+import prng/random
 import prng/seed
 
 pub fn int_list_behaves_the_same_as_elm_implementation_seed_128_test() {
@@ -60,8 +60,8 @@ pub fn int_list_behaves_the_same_as_elm_implementation_seed_128_test() {
     87, 79, 59, 56, 109, 26, 77, 101, 102, 38,
   ]
   let seed = seed.new(128)
-  let generator = generator.list(generator.int(11, 111), of: 1000)
-  let #(value, _seed) = generator.step(generator, seed)
+  let generator = random.list(random.int(11, 111), of: 1000)
+  let #(value, _seed) = random.step(generator, seed)
   should.equal(value, expected)
 }
 
@@ -111,8 +111,8 @@ pub fn int_list_behaves_the_same_as_elm_implementation_seed_11_test() {
     5, 4, 5, 3, 8, 1, 10, 5, 11,
   ]
   let seed = seed.new(11)
-  let generator = generator.list(generator.int(1, 11), of: 1000)
-  let #(value, _seed) = generator.step(generator, seed)
+  let generator = random.list(random.int(1, 11), of: 1000)
+  let #(value, _seed) = random.step(generator, seed)
   should.equal(value, expected)
 }
 
@@ -169,8 +169,8 @@ pub fn int_list_behaves_the_same_as_elm_implementation_with_power_of_two_range_s
     18, 31, 12, 25, 2, 5, 4, 22, 5, 27, 4, 29,
   ]
   let seed = seed.new(11)
-  let generator = generator.list(generator.int(32, 1), of: 1000)
-  let #(value, _seed) = generator.step(generator, seed)
+  let generator = random.list(random.int(32, 1), of: 1000)
+  let #(value, _seed) = random.step(generator, seed)
   should.equal(value, expected)
 }
 
@@ -244,7 +244,7 @@ pub fn int_list_behaves_the_same_as_elm_implementation_with_power_of_two_range_s
     247, 881, 172, 975, 1013,
   ]
   let seed = seed.new(128)
-  let generator = generator.list(generator.int(1024, 1), of: 1000)
-  let #(value, _seed) = generator.step(generator, seed)
+  let generator = random.list(random.int(1024, 1), of: 1000)
+  let #(value, _seed) = random.step(generator, seed)
   should.equal(value, expected)
 }
