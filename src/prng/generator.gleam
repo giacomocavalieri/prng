@@ -3,6 +3,8 @@ import gleam/order.{Eq, Gt, Lt, Order}
 import gleam/pair
 import prng/seed.{Seed}
 
+// DEFINITION AND FIELD ACCESSOR ----------------------------------------------- 
+
 pub opaque type Generator(a) {
   Generator(step: fn(Seed) -> #(a, Seed))
 }
@@ -11,7 +13,7 @@ pub fn step(generator: Generator(a), seed: Seed) -> #(a, Seed) {
   generator.step(seed)
 }
 
-// --- BASIC BUILDERS ---
+// BASIC FFI BUILDERS ----------------------------------------------------------
 
 pub fn int(from: Int, to: Int) -> Generator(Int) {
   use seed <- Generator
@@ -19,11 +21,25 @@ pub fn int(from: Int, to: Int) -> Generator(Int) {
   random_int(seed, low, high)
 }
 
+fn sort_ascending(one: a, other: a, with compare: fn(a, a) -> Order) -> #(a, a) {
+  case compare(one, other) {
+    Lt | Eq -> #(one, other)
+    Gt -> #(other, one)
+  }
+}
+
 @external(erlang, "ffi", "random_int")
 @external(javascript, "../ffi.mjs", "random_int")
 fn random_int(seed: Seed, low: Int, high: Int) -> #(Int, Seed)
 
-// --- FIND A NAME FOR THIS ---
+// PURE GLEAM BUILDERS ---------------------------------------------------------
+
+pub fn constant(value: a) -> Generator(a) {
+  use seed <- Generator
+  #(value, seed)
+}
+
+// GENERATOR COMBINATORS -------------------------------------------------------
 
 pub fn lazy(generator: fn() -> Generator(a)) -> Generator(a) {
   use seed <- Generator
@@ -56,13 +72,53 @@ pub fn map2(
   #(fun(a, b), seed)
 }
 
-pub fn pair(one: Generator(a), with other: Generator(b)) -> Generator(#(a, b)) {
-  map2(one, other, with: pair.new)
+pub fn map3(
+  one: Generator(a),
+  two: Generator(b),
+  three: Generator(c),
+  with fun: fn(a, b, c) -> d,
+) -> Generator(d) {
+  use seed <- Generator
+  let #(a, seed) = one.step(seed)
+  let #(b, seed) = two.step(seed)
+  let #(c, seed) = three.step(seed)
+  #(fun(a, b, c), seed)
 }
 
-pub fn constant(value: a) -> Generator(a) {
+pub fn map4(
+  one: Generator(a),
+  two: Generator(b),
+  three: Generator(c),
+  four: Generator(d),
+  with fun: fn(a, b, c, d) -> e,
+) -> Generator(e) {
   use seed <- Generator
-  #(value, seed)
+  let #(a, seed) = one.step(seed)
+  let #(b, seed) = two.step(seed)
+  let #(c, seed) = three.step(seed)
+  let #(d, seed) = four.step(seed)
+  #(fun(a, b, c, d), seed)
+}
+
+pub fn map5(
+  one: Generator(a),
+  two: Generator(b),
+  three: Generator(c),
+  four: Generator(d),
+  five: Generator(e),
+  with fun: fn(a, b, c, d, e) -> f,
+) -> Generator(f) {
+  use seed <- Generator
+  let #(a, seed) = one.step(seed)
+  let #(b, seed) = two.step(seed)
+  let #(c, seed) = three.step(seed)
+  let #(d, seed) = four.step(seed)
+  let #(e, seed) = five.step(seed)
+  #(fun(a, b, c, d, e), seed)
+}
+
+pub fn pair(one: Generator(a), with other: Generator(b)) -> Generator(#(a, b)) {
+  map2(one, other, with: pair.new)
 }
 
 pub fn list(from generator: Generator(a), of length: Int) -> Generator(List(a)) {
@@ -82,14 +138,5 @@ fn do_list(
       let #(value, seed) = generator.step(seed)
       do_list([value, ..acc], seed, generator, length - 1)
     }
-  }
-}
-
-// --- GENERIC UTILITY FUNCTIONS ---
-
-fn sort_ascending(one: a, other: a, with compare: fn(a, a) -> Order) -> #(a, a) {
-  case compare(one, other) {
-    Lt | Eq -> #(one, other)
-    Gt -> #(other, one)
   }
 }
