@@ -42,8 +42,8 @@ export function random_float(seed, from, to) {
     const first_number = seed_to_int(seed)
     const second_number = seed_to_int(new_seed)
     
-    const high = (0x03FFFFFF & first_number) * 1.0
-    const low = (0x07FFFFFF & second_number) * 1.0
+    const high = 0x03FFFFFF & first_number
+    const low = 0x07FFFFFF & second_number
     const value = ((high * 134217728.0) + low) / 9007199254740992.0
     
     const range = to - from

@@ -15,9 +15,9 @@ random_float(Seed, From, To) ->
     NewSeed = next(Seed),
     FirstNumber = seed_to_int(Seed),
     SecondNumber = seed_to_int(NewSeed),
-    High = (FirstNumber band 16#03FFFFFF) * 1.0,
-    Low = (SecondNumber band 16#07FFFFFF) * 1.0,
-    Value = ((High * 134217728) + Low) / 9007199254740992,
+    High = FirstNumber band 16#03FFFFFF,
+    Low = SecondNumber band 16#07FFFFFF,
+    Value = ((High * 134217728.0) + Low) / 9007199254740992.0,
     Range = To - From,
     Scaled = Value * Range + From,
     {Scaled, next(NewSeed)}.
