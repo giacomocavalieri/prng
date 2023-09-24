@@ -19,12 +19,12 @@ export function seed_to_int(seed) {
     return ((word >>> 22) ^ word) >>> 0
 }
 
-export function random_int(seed, low, high) {
-    const range = high - low + 1 // 32
+export function random_int(seed, from, to) {
+    const range = to - from + 1
     const is_power_of_2 = ((range - 1) & range) === 0
     if (is_power_of_2) {
         const number = ((range - 1) & seed_to_int(seed)) >>> 0
-        return [number + low, next(seed)]
+        return [number + from, next(seed)]
     } else {
         const threshold = (((-range) >>> 0) % range) >>> 0
         let iteration_seed = seed
@@ -33,6 +33,20 @@ export function random_int(seed, low, high) {
             x = seed_to_int(iteration_seed)
             iteration_seed = next(seed)
         } while (x < threshold)
-        return [low + (x % range), iteration_seed]
+        return [from + (x % range), iteration_seed]
     }
+}
+
+export function random_float(seed, from, to) {
+    const new_seed = next(seed)
+    const first_number = seed_to_int(seed)
+    const second_number = seed_to_int(new_seed)
+    
+    const high = (0x03FFFFFF & first_number) * 1.0
+    const low = (0x07FFFFFF & second_number) * 1.0
+    const value = ((high * 134217728.0) + low) / 9007199254740992.0
+    
+    const range = to - from
+    const scaled = value * range + from
+    return [scaled, next(new_seed)]
 }

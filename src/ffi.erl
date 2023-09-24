@@ -1,5 +1,5 @@
 -module(ffi).
--export([new_seed/1, seed_to_int/1, random_int/3]).
+-export([new_seed/1, seed_to_int/1, random_int/3, random_float/3]).
 
 new_seed(From) ->
     {State0, Step} = next({0, 1_013_904_223}),
@@ -11,26 +11,37 @@ seed_to_int({State, _Step}) ->
     Word = trunc(expand_to_64(State bxor ShiftedState) * 277_803_737.0),
     truncate_32(urs(Word, 22) bxor Word).
 
-random_int(Seed, Low, High) ->
-    Range = High - Low + 1,
+random_float(Seed, From, To) ->
+    NewSeed = next(Seed),
+    FirstNumber = seed_to_int(Seed),
+    SecondNumber = seed_to_int(NewSeed),
+    High = (FirstNumber band 16#03FFFFFF) * 1.0,
+    Low = (SecondNumber band 16#07FFFFFF) * 1.0,
+    Value = ((High * 134217728) + Low) / 9007199254740992,
+    Range = To - From,
+    Scaled = Value * Range + From,
+    {Scaled, next(NewSeed)}.
+
+random_int(Seed, From, To) ->
+    Range = To - From + 1,
     IsPowerOf2 = ((Range - 1) band Range) =:= 0,
     case IsPowerOf2 of
         true ->
             Number = truncate_32(seed_to_int(Seed) band (Range - 1)),
-            {Number + Low, next(Seed)};
+            {Number + From, next(Seed)};
         false ->
             Threshold = truncate_32(truncate_32(-Range) rem Range),
-            account_for_bias(Threshold, Seed, Low, Range)
+            account_for_bias(Threshold, Seed, From, Range)
     end.
 
-account_for_bias(Threshold, Seed, Low, Range) ->
+account_for_bias(Threshold, Seed, From, Range) ->
     X = seed_to_int(Seed),
     IterationSeed = next(Seed),
     case X < Threshold of
         true ->
-            account_for_bias(Threshold, IterationSeed, Low, Range);
+            account_for_bias(Threshold, IterationSeed, From, Range);
         false ->
-            {Low + (X rem Range), IterationSeed}
+            {From + (X rem Range), IterationSeed}
     end.
 
 next({State, Step}) ->
