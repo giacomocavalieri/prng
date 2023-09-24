@@ -1,4 +1,5 @@
 import gleam/int
+import gleam/map.{Map}
 import gleam/order.{Eq, Gt, Lt, Order}
 import gleam/pair
 import prng/seed.{Seed}
@@ -39,12 +40,48 @@ pub fn constant(value: a) -> Generator(a) {
   #(value, seed)
 }
 
-// GENERATOR COMBINATORS -------------------------------------------------------
-
 pub fn lazy(generator: fn() -> Generator(a)) -> Generator(a) {
   use seed <- Generator
   generator().step(seed)
 }
+
+// DATA STRUCTURES -------------------------------------------------------------
+
+pub fn pair(one: Generator(a), with other: Generator(b)) -> Generator(#(a, b)) {
+  map2(one, other, with: pair.new)
+}
+
+pub fn list(from generator: Generator(a), of length: Int) -> Generator(List(a)) {
+  use seed <- Generator
+  do_list([], seed, generator, length)
+}
+
+fn do_list(
+  acc: List(a),
+  seed: Seed,
+  generator: Generator(a),
+  length: Int,
+) -> #(List(a), Seed) {
+  case length <= 0 {
+    True -> #(acc, seed)
+    False -> {
+      let #(value, seed) = generator.step(seed)
+      do_list([value, ..acc], seed, generator, length - 1)
+    }
+  }
+}
+
+pub fn dictionary(
+  size: Int,
+  keys: Generator(k),
+  values: Generator(v),
+) -> Generator(Map(k, v)) {
+  pair(keys, values)
+  |> list(of: size)
+  |> map(map.from_list)
+}
+
+// MAPPING ---------------------------------------------------------------------
 
 pub fn then(
   generator: Generator(a),
@@ -115,28 +152,4 @@ pub fn map5(
   let #(d, seed) = four.step(seed)
   let #(e, seed) = five.step(seed)
   #(fun(a, b, c, d, e), seed)
-}
-
-pub fn pair(one: Generator(a), with other: Generator(b)) -> Generator(#(a, b)) {
-  map2(one, other, with: pair.new)
-}
-
-pub fn list(from generator: Generator(a), of length: Int) -> Generator(List(a)) {
-  use seed <- Generator
-  do_list([], seed, generator, length)
-}
-
-fn do_list(
-  acc: List(a),
-  seed: Seed,
-  generator: Generator(a),
-  length: Int,
-) -> #(List(a), Seed) {
-  case length <= 0 {
-    True -> #(acc, seed)
-    False -> {
-      let #(value, seed) = generator.step(seed)
-      do_list([value, ..acc], seed, generator, length - 1)
-    }
-  }
 }
