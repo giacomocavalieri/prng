@@ -222,13 +222,75 @@ pub fn constant(value: a) -> Generator(a) {
   #(value, seed)
 }
 
-/// TODO
+/// Returns a generator the produces values with an equal probability.
+/// The produced values are taken from the provided options.
+/// 
+/// This function always takes at least one item (as its first argument); if it
+/// were to accept just a list of options, it could be called like this:
+/// 
+/// ```gleam
+/// uniform([])
+/// ```
+/// 
+/// In which case it would be impossible to actually produce any value, none was
+/// provided!
+/// 
+/// ## Examples
+/// 
+/// Given the following type to model colors:
+/// 
+/// ```gleam
+/// pub type Color {
+///   Red
+///   Green
+///   Blue
+/// }
+/// ```
+/// 
+/// You could write a generator that returns each color with an equal
+/// probability (~33%) each color like this:
+/// 
+/// ```gleam
+/// let color = random.uniform(Re, [Green, Blue])
+/// ```
+/// 
 /// 
 pub fn uniform(first: a, others: List(a)) -> Generator(a) {
   weighted(#(1.0, first), list.map(others, pair.new(1.0, _)))
 }
 
-/// TODO
+/// This function works exactly like `uniform` but will return an `Error(Nil)`
+/// if the provided argument is an empty list since the generator wouldn't be able
+/// to produce any value in that case.
+/// 
+/// The returned generator will produce values from the given list with equal
+/// probability.
+/// 
+/// ## Examples
+/// 
+/// ```gleam
+/// random.try_uniform([])
+/// // -> Error(Nil)
+/// ```
+/// 
+/// For example if you consider the following type definition to model color:
+/// 
+/// ```gleam
+/// type Color {
+///   Red
+///   Green
+///   Blue
+/// }
+/// ```
+/// 
+/// This call of `try_uniform` will produce a generator wrapped in an `Ok`:
+/// 
+/// ```gleam
+/// let assert Ok(color_1) = random.try_uniform([Red, Green, Blue])
+/// let color_2 = random.uniform(Red, [Green, Blue])
+/// ```
+/// 
+/// The generators `color_1` and `color_2` will behave exactly the same.
 /// 
 pub fn try_uniform(options: List(a)) -> Result(Generator(a), Nil) {
   case options {
@@ -278,12 +340,18 @@ fn get_by_weight(
 /// 
 /// ## Examples
 /// 
+/// Given the following type to model the outcome of a coin flip:
+/// 
 /// ```gleam
 /// pub type CoinFlip {
 ///   Heads
 ///   Tails
 /// }
+/// ```
 /// 
+/// You can write a generator for coin flip outcomes like this:
+/// 
+/// ```gleam
 /// let flip = random.choose(Heads, Tails)
 /// let #(result, _) = random.step(flip, seed.new(11))
 /// 
