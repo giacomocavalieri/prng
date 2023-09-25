@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: checkout repo
         uses: actions/checkout@v3.5.3
+      - name: "check tags are correct"
+        uses: giacomocavalieri/tagref_action@v1
       - name: setup beam
         uses: erlef/setup-beam@v1.16.0
         with:
@@ -20,12 +22,6 @@ jobs:
           gleam-version: "0.30.5"
           rebar3-version: "3"
           # elixir-version: "1.15.4"
-      - name: install tagref
-        run: curl https://raw.githubusercontent.com/stepchowfun/tagref/main/install.sh -LSfs | sh
-      - name: check all tag references are correct
-        run: tagref check
-      - name: check there are no unused tags
-        run: tagref list-unused --fail-if-any
       - name: check formatting
         run: gleam format --check src test
       - name: dependencies download
