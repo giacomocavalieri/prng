@@ -3,7 +3,7 @@
 [![Package Version](https://img.shields.io/hexpm/v/prng)](https://hex.pm/packages/prng)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/prng/)
 
-A pure random number generator for Gleam 🎲
+🎲 A pure random number generator for Gleam
 
 > ⚙️ This package works for both the Erlang and JavaScript target
 
