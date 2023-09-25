@@ -115,7 +115,7 @@ pub fn step(generator: Generator(a), seed: Seed) -> #(a, Seed) {
 /// ```
 /// 
 pub fn sample_once(generator: Generator(a)) -> a {
-  // ⚠️ Possible pain point: this is based on the assumption that, a sampled
+  // ⚠️ [ref:iterator_infinite] this is based on the assumption that, a sampled
   // generator will always yield at least one value. This is true since the
   // `to_iterator` implementation produces an infinite stream of values.
   // However, if the implementation were to change this piece of code may break!
@@ -149,6 +149,8 @@ pub fn sample(from generator: Generator(a)) -> Iterator(a) {
 pub fn to_iterator(generator: Generator(a), seed: Seed) -> Iterator(a) {
   use seed <- iterator.unfold(from: seed)
   let #(value, new_seed) = step(generator, seed)
+  // [tag:iterator_infinite] this will generate an infinite stream of values
+  // since it never returns an `iterator.Done`
   iterator.Next(element: value, accumulator: new_seed)
 }
 
