@@ -254,7 +254,6 @@ pub fn constant(value: a) -> Generator(a) {
 /// let color = random.uniform(Red, [Green, Blue])
 /// ```
 /// 
-/// 
 pub fn uniform(first: a, others: List(a)) -> Generator(a) {
   weighted(#(1.0, first), list.map(others, pair.new(1.0, _)))
 }
@@ -263,8 +262,7 @@ pub fn uniform(first: a, others: List(a)) -> Generator(a) {
 /// if the provided argument is an empty list since the generator wouldn't be
 /// able to produce any value in that case.
 /// 
-/// The returned generator will produce values from the given list with equal
-/// probability.
+/// It generates values from the given list with equal probability.
 /// 
 /// ## Examples
 /// 
@@ -299,7 +297,40 @@ pub fn try_uniform(options: List(a)) -> Result(Generator(a), Nil) {
   }
 }
 
-/// TODO
+/// Generates values from the given ones with a weighted probability.
+/// 
+/// This generator can guarantee to produce values since it always takes at
+/// least one item (as its first argument); if it were to accept just a list of
+/// options, it could be called like this:
+/// 
+/// ```gleam
+/// uniform([])
+/// ```
+/// 
+/// In which case it would be impossible to actually produce any value: none was
+/// provided!
+/// 
+/// ## Examples
+/// 
+/// Given the following type to model the outcome of a coin flip:
+/// 
+/// ```gleam
+/// pub type CoinFlip {
+///   Heads
+///   Tails
+/// }
+/// ```
+/// 
+/// You could write a generator for a loaded coin that lands on head 75% of the
+/// times like this:
+/// 
+/// ```gleam
+/// let loaded_coin = random.weighted(#(Heads, 0.75), [#(Tails, 0.25)])
+/// ```
+/// 
+/// In this example the weights add up to 1, but you could use any number: the
+/// weights get added up to a `total` and the probability of each option is its
+/// `weight` / `total`.
 /// 
 pub fn weighted(first: #(Float, a), others: List(#(Float, a))) -> Generator(a) {
   let normalise = fn(pair) { float.absolute_value(pair.first(pair)) }
@@ -307,7 +338,37 @@ pub fn weighted(first: #(Float, a), others: List(#(Float, a))) -> Generator(a) {
   map(float(0.0, total), get_by_weight(first, others, _))
 }
 
-/// TODO
+/// This function works exactly like `weighted` but will return an `Error(Nil)`
+/// if the provided argument is an empty list since the generator wouldn't be
+/// able to produce any value in that case.
+/// 
+/// It generates values from the given list with a weighted probability.
+/// 
+/// ## Examples
+/// 
+/// ```gleam
+/// random.try_weighted([])
+/// // -> Error(Nil)
+/// ```
+/// 
+/// For example if you consider the following type definition to model color:
+/// 
+/// ```gleam
+/// type CoinFlip {
+///   Heads
+///   Tails
+/// }
+/// ```
+/// 
+/// This call of `try_weighted` will produce a generator wrapped in an `Ok`:
+/// 
+/// ```gleam
+/// let assert Ok(coin_1) =
+///   random.try_weighted([#(0.75, Heads), #(0.25, Tails)])
+/// let coin_2 = random.uniform(#(0.75, Heads), [#(0.25, Tails)])
+/// ```
+/// 
+/// The generators `coin_1` and `coin_2` will behave exactly the same.
 /// 
 pub fn try_weighted(options: List(#(Float, a))) -> Result(Generator(a), Nil) {
   case options {
@@ -409,18 +470,6 @@ fn do_list(
   }
 }
 
-/// TODO.
-/// 
-pub fn dictionary(
-  size: Int,
-  keys: Generator(k),
-  values: Generator(v),
-) -> Generator(Map(k, v)) {
-  pair(keys, values)
-  |> list(of: size)
-  |> map(map.from_list)
-}
-
 // MAPPING ---------------------------------------------------------------------
 
 /// TODO.
@@ -435,7 +484,7 @@ pub fn then(
   |> step(seed)
 }
 
-/// TODO
+/// Transforms the values produced by a generator.
 /// 
 pub fn map(generator: Generator(a), with fun: fn(a) -> b) -> Generator(b) {
   use seed <- Generator
