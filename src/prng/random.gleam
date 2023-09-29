@@ -334,7 +334,7 @@ pub fn try_uniform(options: List(a)) -> Result(Generator(a), Nil) {
 /// options, it could be called like this:
 /// 
 /// ```gleam
-/// uniform([])
+/// weighted([])
 /// ```
 /// 
 /// In which case it would be impossible to actually produce any value: none was
@@ -459,7 +459,12 @@ pub fn choose(one: a, or other: a) -> Generator(a) {
 /// ## Examples
 /// 
 /// ```gleam
-/// let one_to_five = 
+/// let one_to_five = random.int(1, 5)
+/// let probability = random.float(0.0, 1.0)
+/// let ints_and_floats = random.pair(one_to_five, probability)
+/// 
+/// random.sample(ints_and_floats)
+/// // -> #(3, 0.22)
 /// ```
 /// 
 pub fn pair(one: Generator(a), with other: Generator(b)) -> Generator(#(a, b)) {
