@@ -47,12 +47,12 @@ will look like:
 
 ```gleam
 let generator: Generator(Float) = random.float(0.0, 1.0)
-let random_value: Float = random.sample_once(generator)
+let random_value: Float = random.sample(generator)
 ```
 
 Notice a subtle but fundamental difference: you're no longer simply generating
 a value, you're _describing_ the values you want to generate and the you can
-take those out of a generator with a variety of functions, like `sample_once`.
+take those out of a generator with a variety of functions, like `sample`.
 
 This neat trick can give two great features:
 
