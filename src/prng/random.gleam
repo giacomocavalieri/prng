@@ -159,6 +159,20 @@ pub fn to_iterator(generator: Generator(a), seed: Seed) -> Iterator(a) {
 
 // BASIC FFI BUILDERS ----------------------------------------------------------
 
+/// The underlying algorith will work best for integers in the inclusive range 
+/// going from `min_int` up to `max_int`.
+/// 
+/// It can generate values outside of that range, but they are "not as random".
+/// 
+pub const min_int = -2_147_483_648
+
+/// The underlying algorith will work best for integers in the inclusive range 
+/// going from `min_int` up to `max_int`.
+/// 
+/// It can generate values outside of that range, but they are "not as random".
+/// 
+pub const max_int = 2_147_483_647
+
 /// Generates integers in the given inclusive range.
 /// 
 /// ## Examples
