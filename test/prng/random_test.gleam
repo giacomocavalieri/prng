@@ -7,7 +7,7 @@ import prng/seed
 fn test(for_all generator: Generator(a), that property: fn(a) -> Bool) -> Nil {
   let number_of_samples = 1000
   let samples =
-    random.sample(generator)
+    random.to_random_iterator(generator)
     |> iterator.take(number_of_samples)
     |> iterator.to_list
 
@@ -24,7 +24,7 @@ fn behaves_the_same(gen1: Generator(a), gen2: Generator(a)) -> Nil {
   let seed =
     random.int(random.min_int, random.max_int)
     |> random.map(seed.new)
-    |> random.sample_once
+    |> random.sample
 
   let samples1 =
     random.to_iterator(gen1, seed)

@@ -7,6 +7,19 @@
 //// 
 //// _It is not cryptographically secure!_
 //// 
+//// You can think of this module's functions as divided into roughly three
+//// groups:
+//// 
+//// - functions to build generators: [`int`](#int), [`float`](#float),
+////   [`uniform`](#uniform), [`weighted`](#weighted), [`choose`](#choose),
+////   [`constant`](#constant)
+//// - functions to transform and compose generators: [`map`](#map),
+////   [`then`](#then), [`list`](#list), [`pair`](#pair)
+//// - functions to get values out of generators: [`sample`](#sample),
+////   [`to_random_iterator`](#to_random_iterator),
+////   [`to_iterator`](#to_iterator),
+////   [`step`](#step)
+//// 
 
 import gleam/float
 import gleam/int
@@ -77,6 +90,10 @@ pub opaque type Generator(a) {
 /// This is why this function also returns a new seed that can be used to make
 /// subsequent calls to `step` to get other random values.
 /// 
+/// Stepping a generator by hand can be quite cumbersome, so I recommend you
+/// try [`to_iterator`](#to_iterator),
+/// [`to_random_iterator`](#to_random_iterator), or [`sample`](#sample) instead.
+/// 
 /// ## Examples
 /// 
 /// ```gleam
@@ -110,18 +127,18 @@ pub fn step(generator: Generator(a), seed: Seed) -> #(a, Seed) {
 /// 
 /// ```gleam
 /// let probability = random.float(0.0, 1.0)
-/// case random.sample_once(probability) <= 0.4 {
+/// case random.sample(probability) <= 0.4 {
 ///   True -> perform_action()
 ///   False -> Nil // do nothing
 /// }
 /// ```
 /// 
-pub fn sample_once(generator: Generator(a)) -> a {
+pub fn sample(generator: Generator(a)) -> a {
   // ⚠️ [ref:iterator_infinite] this is based on the assumption that, a sampled
   // generator will always yield at least one value. This is true since the
   // `to_iterator` implementation produces an infinite stream of values.
   // However, if the implementation were to change this piece of code may break!
-  let assert Ok(result) = iterator.first(sample(generator))
+  let assert Ok(result) = iterator.first(to_random_iterator(generator))
   result
 }
 
@@ -135,7 +152,7 @@ pub fn sample_once(generator: Generator(a)) -> a {
 /// If you want to have control over the initial seed used to get the infinite
 /// sequence of values, you can use `to_iterator`.
 /// 
-pub fn sample(from generator: Generator(a)) -> Iterator(a) {
+pub fn to_random_iterator(from generator: Generator(a)) -> Iterator(a) {
   to_iterator(generator, seed.new(int.random(0, 4_294_967_296)))
 }
 
@@ -146,8 +163,8 @@ pub fn sample(from generator: Generator(a)) -> Iterator(a) {
 /// infinite sequence.
 /// 
 /// If you don't care about the initial seed and reproducibility is not your
-/// goal, you can use `sample` which works like this function and randomly picks
-/// the initial seed.
+/// goal, you can use `to_random_iterator` which works like this function and
+/// randomly picks the initial seed.
 /// 
 pub fn to_iterator(generator: Generator(a), seed: Seed) -> Iterator(a) {
   use seed <- iterator.unfold(from: seed)
@@ -226,7 +243,7 @@ fn random_float(seed: Seed, from: Float, to: Float) -> #(Float, Seed)
 /// 
 /// ```gleam
 /// let always_eleven = random.constant(11)
-/// random.sample_once(always_eleven)
+/// random.sample(always_eleven)
 /// // -> 11
 /// ```
 /// 
