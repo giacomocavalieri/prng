@@ -14,7 +14,9 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v3.5.3
       - name: "check tags are correct"
-        uses: giacomocavalieri/tagref_action@v1
+        uses: giacomocavalieri/tagref_action@v2
+        with:
+          unused_tags: "forbid"
       - name: setup beam
         uses: erlef/setup-beam@v1.16.0
         with:
