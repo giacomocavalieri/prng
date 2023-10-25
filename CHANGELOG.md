@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v2.0.0 - 2023-10-25
 
 - The `prng/random` documentation has received some slight improvements.
 - The `prng/seed` module gains the `random` function.
