@@ -7,18 +7,45 @@
 //// 
 //// _It is not cryptographically secure!_
 //// 
-//// You can think of this module's functions as divided into roughly three
-//// groups:
+//// You can use this cheatsheet to navigate the module documentation:
 //// 
-//// - functions to build generators: [`int`](#int), [`float`](#float),
-////   [`uniform`](#uniform), [`weighted`](#weighted), [`choose`](#choose),
-////   [`constant`](#constant)
-//// - functions to transform and compose generators: [`map`](#map),
-////   [`then`](#then), [`list`](#list), [`pair`](#pair)
-//// - functions to get values out of generators: [`sample`](#sample),
-////   [`to_random_iterator`](#to_random_iterator),
-////   [`to_iterator`](#to_iterator),
-////   [`step`](#step)
+//// <table>
+//// <tr>
+////   <td>Building generators</td>
+////   <td>
+////     <a href="#int">int</a>,
+////     <a href="#float">float</a>,
+////     <a href="#uniform">uniform</a>,
+////     <a href="#weighted">weighted</a>,
+////     <a href="#choose">choose</a>,
+////     <a href="#constant">constant</a>
+////   </td>
+//// </tr>
+//// <tr>
+////   <td>Transform and compose generators</td>
+////   <td>
+////     <a href="#map">map</a>,
+////     <a href="#then">then</a>,
+////     <a href="#list">list</a>,
+////     <a href="#pair">pair</a>
+////   </td>
+//// </tr>
+//// <tr>
+////   <td>Getting reproducible values out of generators</td>
+////   <td>
+////     <a href="#step">step</a>,
+////     <a href="#sample">sample</a>,
+////     <a href="#to_iterator">to_iterator</a>
+////   </td>
+//// </tr>
+//// <tr>
+////   <td>Getting truly random values out of generators</td>
+////   <td>
+////     <a href="#random_sample">random_sample</a>,
+////     <a href="#to_random_iterator">to_random_iterator</a>
+////   </td>
+//// </tr>
+//// </table>  
 //// 
 
 import gleam/float
