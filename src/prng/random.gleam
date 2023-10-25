@@ -180,7 +180,7 @@ pub fn sample(generator: Generator(a)) -> a {
 /// sequence of values, you can use `to_iterator`.
 /// 
 pub fn to_random_iterator(from generator: Generator(a)) -> Iterator(a) {
-  to_iterator(generator, seed.new(int.random(0, 4_294_967_296)))
+  to_iterator(generator, seed.random())
 }
 
 /// Turns the given generator into an infinite stream of random values generated
