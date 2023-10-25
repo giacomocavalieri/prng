@@ -24,7 +24,7 @@ fn behaves_the_same(gen1: Generator(a), gen2: Generator(a)) -> Nil {
   let seed =
     random.int(random.min_int, random.max_int)
     |> random.map(seed.new)
-    |> random.sample
+    |> random.random_sample
 
   let samples1 =
     random.to_iterator(gen1, seed)

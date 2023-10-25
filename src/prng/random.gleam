@@ -154,13 +154,13 @@ pub fn step(generator: Generator(a), seed: Seed) -> #(a, Seed) {
 /// 
 /// ```gleam
 /// let probability = random.float(0.0, 1.0)
-/// case random.sample(probability) <= 0.4 {
+/// case random.random_sample(probability) <= 0.4 {
 ///   True -> perform_action()
 ///   False -> Nil // do nothing
 /// }
 /// ```
 /// 
-pub fn sample(generator: Generator(a)) -> a {
+pub fn random_sample(generator: Generator(a)) -> a {
   // ⚠️ [ref:iterator_infinite] this is based on the assumption that, a sampled
   // generator will always yield at least one value. This is true since the
   // `to_iterator` implementation produces an infinite stream of values.
@@ -270,7 +270,7 @@ fn random_float(seed: Seed, from: Float, to: Float) -> #(Float, Seed)
 /// 
 /// ```gleam
 /// let always_eleven = random.constant(11)
-/// random.sample(always_eleven)
+/// random.random_sample(always_eleven)
 /// // -> 11
 /// ```
 /// 
@@ -490,7 +490,7 @@ pub fn choose(one: a, or other: a) -> Generator(a) {
 /// let probability = random.float(0.0, 1.0)
 /// let ints_and_floats = random.pair(one_to_five, probability)
 /// 
-/// random.sample(ints_and_floats)
+/// random.random_sample(ints_and_floats)
 /// // -> #(3, 0.22)
 /// ```
 /// 
