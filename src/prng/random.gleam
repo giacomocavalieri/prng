@@ -137,6 +137,16 @@ pub fn step(generator: Generator(a), seed: Seed) -> #(a, Seed) {
   generator.step(seed)
 }
 
+/// Generates a single value using the given generator and seed.
+/// 
+/// This is just a shorthand for the `step` function that drops the new
+/// seed. It can be useful if you just need to get a single value out of
+/// a generator and need the result to be reproducible.
+/// 
+pub fn sample(from generator: Generator(a), with seed: Seed) -> a {
+  step(generator, seed).0
+}
+
 /// Generates a single value using the given generator.
 /// 
 /// The initial seed is chosen randomly so you won't have control over which
