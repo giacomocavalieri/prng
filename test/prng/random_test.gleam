@@ -1,7 +1,7 @@
 import gleam/iterator
 import gleam/list
 import gleeunit/should
-import prng/random.{Generator}
+import prng/random.{type Generator}
 import prng/seed
 
 fn test(for_all generator: Generator(a), that property: fn(a) -> Bool) -> Nil {

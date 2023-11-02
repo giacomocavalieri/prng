@@ -1,5 +1,5 @@
 import gleeunit/should
-import prng/random.{Generator}
+import prng/random.{type Generator}
 import prng/seed
 
 fn test_generator(expected: a, generator: Generator(a), with seed: Int) -> Nil {

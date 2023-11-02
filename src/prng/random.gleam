@@ -50,11 +50,11 @@
 
 import gleam/float
 import gleam/int
-import gleam/iterator.{Iterator}
+import gleam/iterator.{type Iterator}
 import gleam/list
-import gleam/order.{Eq, Gt, Lt, Order}
+import gleam/order.{type Order, Eq, Gt, Lt}
 import gleam/pair
-import prng/seed.{Seed}
+import prng/seed.{type Seed}
 
 // DEFINITION ------------------------------------------------------------------ 
 
