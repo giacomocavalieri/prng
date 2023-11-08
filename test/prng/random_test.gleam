@@ -240,3 +240,16 @@ pub fn map5_maps_the_generated_value_test() {
     )
   test(for_all: examples, that: fn(value) { value == #(1, 2, 3, 4, 5) })
 }
+
+pub fn a_fixed_size_string_of_size_0_is_the_empty_string_test() {
+  use string <- test(for_all: random.fixed_size_string(0))
+  string == ""
+}
+
+import gleam/io
+
+pub fn prova_test() {
+  random.string()
+  |> random.random_sample
+  |> io.debug
+}

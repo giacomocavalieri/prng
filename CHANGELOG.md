@@ -13,7 +13,6 @@
 - 💡 The `prng/random` module gains the `bit_array` function.
 - 💡 The `prng/random` module gains the `fixed_size_string` function.
 - 💡 The `prng/random` module gains the `string` function.
-- 💡 The `prng/random` module gains the `utf_codepoint` function.
 - 💡 The `prng/random` module gains the `list` function.
 - 💥 The `list` function in the `prng/random` module has been renamed to
   `fixed_size_list`.

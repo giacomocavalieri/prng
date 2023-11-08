@@ -915,7 +915,7 @@ pub fn map5(
 // CHARACTERS AND STRINGS ------------------------------------------------------
 
 /// Generates Strings with a random number of UTF code points, between
-/// 0 (included) and 32 (excluded).
+/// 0 (included) and 32 (included).
 /// 
 /// This is similar to `fixed_size_string`, with the difference that the
 /// size is randomly generated as well.
@@ -927,16 +927,29 @@ pub fn string() -> Generator(String) {
 
 /// Generates Strings with the given number number of UTF code points.
 /// 
+/// > ⚠️ The generated codepoints will be in the range from 0 (inclusive) to
+/// > 1023 (inclusive). If you feel like these strings are not enough for your
+/// > needs, please open an issue! I'd love to hear your use case and improve
+/// > the package.
+/// 
 pub fn fixed_size_string(size: Int) -> Generator(String) {
-  fixed_size_list(from: utf_codepoint(), of: size)
+  fixed_size_list(from: utf_codepoint_in_range(0, 1023), of: size)
   |> map(string.from_utf_codepoints)
 }
 
-/// Generates UTF [code points](https://en.wikipedia.org/wiki/Code_point) in
-/// the UTF-8 range.
-/// 
-pub fn utf_codepoint() -> Generator(UtfCodepoint) {
-  use raw_codepoint <- map(int(0, 0x10FFFF))
-  let assert Ok(codepoint) = string.utf_codepoint(raw_codepoint)
-  codepoint
+/// I'm not exposing this function because, if one is not careful with the range,
+/// it might lead to a nasty infinite loop.
+/// When I come up with a better alternative I might make a similar API public,
+/// for now, if someone wants to do something unsafe they will have to
+/// manually reimplement it.
+///
+fn utf_codepoint_in_range(lower: Int, upper: Int) -> Generator(UtfCodepoint) {
+  use raw_codepoint <- then(int(lower, upper))
+  case string.utf_codepoint(raw_codepoint) {
+    Ok(codepoint) -> constant(codepoint)
+    Error(_) -> utf_codepoint_in_range(lower, upper)
+  }
+  // ⚠️ ^-- this works under the assumption (which might be wrong!) that invalid
+  //        unicode chars in the given range are pretty rare and we're not
+  //        getting stuck in the recursion for a long time
 }
