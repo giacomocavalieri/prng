@@ -82,6 +82,12 @@ pub fn fixed_size_list_generates_lists_of_the_given_length_test() {
   list.length(list) == 10 && list.all(list, fn(n) { n == 11 })
 }
 
+pub fn list_returns_list_in_range_0_32_test() {
+  use list <- test(for_all: random.list(random.int(1, 10)))
+  let length = list.length(list)
+  0 <= length && length <= 32
+}
+
 pub fn uniform_generates_values_from_the_given_list_test() {
   let examples = random.uniform(1, [2, 3])
   test(for_all: examples, that: fn(n) { n == 1 || n == 2 || n == 3 })

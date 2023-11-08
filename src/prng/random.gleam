@@ -27,6 +27,7 @@
 ////     <a href="#map">map</a>,
 ////     <a href="#then">then</a>,
 ////     <a href="#fixed_size_list">fixed_size_list</a>,
+////     <a href="#list">list</a>,
 ////     <a href="#pair">pair</a>
 ////   </td>
 //// </tr>
@@ -544,6 +545,20 @@ fn do_fixed_size_list(
       do_fixed_size_list([value, ..acc], seed, generator, length - 1)
     }
   }
+}
+
+/// Generates a list with a random size with at most 32 items.
+/// Each item is generated using the given generator.
+/// 
+/// This is similar to `fixed_size_list` with the difference that the size
+/// is chosen randomly.
+/// 
+pub fn list(generator: Generator(a)) -> Generator(List(a)) {
+  // ⚠️ There might be a more thoughtful implementation that has higher chances
+  // of returning empty lists (or shorter ones), for now I think this is more
+  // than enough
+  use size <- then(int(0, 32))
+  fixed_size_list(from: generator, of: size)
 }
 
 // MAPPING ---------------------------------------------------------------------
