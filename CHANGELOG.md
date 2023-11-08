@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- The `list` function in the `prng/random` module has been renamed to
+  `fixed_size_list`
+
 ## v2.0.0 - 2023-10-25
 
 - The `prng/random` documentation has received some slight improvements.

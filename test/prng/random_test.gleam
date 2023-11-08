@@ -70,14 +70,14 @@ pub fn weighted_never_returns_value_with_zero_weight_test() {
   test(for_all: languages, that: fn(language) { language == "Gleam" })
 }
 
-pub fn list_generates_lists_of_the_given_length_test() {
-  let empty_lists = random.list(random.constant(11), of: 0)
+pub fn fixed_size_list_generates_lists_of_the_given_length_test() {
+  let empty_lists = random.fixed_size_list(random.constant(11), of: 0)
   test(for_all: empty_lists, that: fn(list) { list.is_empty(list) })
 
-  let empty_lists = random.list(random.constant(11), of: -1)
+  let empty_lists = random.fixed_size_list(random.constant(11), of: -1)
   test(for_all: empty_lists, that: fn(list) { list.is_empty(list) })
 
-  let lists = random.list(random.constant(11), of: 10)
+  let lists = random.fixed_size_list(random.constant(11), of: 10)
   use list <- test(for_all: lists)
   list.length(list) == 10 && list.all(list, fn(n) { n == 11 })
 }

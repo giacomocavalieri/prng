@@ -26,7 +26,7 @@
 ////   <td>
 ////     <a href="#map">map</a>,
 ////     <a href="#then">then</a>,
-////     <a href="#list">list</a>,
+////     <a href="#fixed_size_list">fixed_size_list</a>,
 ////     <a href="#pair">pair</a>
 ////   </td>
 //// </tr>
@@ -515,19 +515,23 @@ pub fn pair(one: Generator(a), with other: Generator(b)) -> Generator(#(a, b)) {
 /// 
 /// Imagine you're modelling a game of
 /// [Risk](https://en.wikipedia.org/wiki/Risk_(game)); when a player "attacks"
-/// they can roll three dice. You may model that outcome using `list` like this:
+/// they can roll three dice. You may model that outcome using `fixed_size_list`
+/// like this:
 /// 
 /// ```gleam
 /// let dice_roll = random.int(1, 6)
-/// let attack_outcome = random.list(dice_roll, 3)
+/// let attack_outcome = random.fixed_size_list(dice_roll, 3)
 /// ``` 
 /// 
-pub fn list(from generator: Generator(a), of length: Int) -> Generator(List(a)) {
+pub fn fixed_size_list(
+  from generator: Generator(a),
+  of length: Int,
+) -> Generator(List(a)) {
   use seed <- Generator
-  do_list([], seed, generator, length)
+  do_fixed_size_list([], seed, generator, length)
 }
 
-fn do_list(
+fn do_fixed_size_list(
   acc: List(a),
   seed: Seed,
   generator: Generator(a),
@@ -537,7 +541,7 @@ fn do_list(
     True -> #(acc, seed)
     False -> {
       let #(value, seed) = step(generator, seed)
-      do_list([value, ..acc], seed, generator, length - 1)
+      do_fixed_size_list([value, ..acc], seed, generator, length - 1)
     }
   }
 }

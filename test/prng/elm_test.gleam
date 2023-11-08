@@ -65,7 +65,10 @@ pub fn int_list_behaves_the_same_as_elm_implementation_seed_128_test() {
     69, 107, 93, 108, 31, 76, 74, 59, 38, 19, 79, 84, 20, 32, 77, 54, 16, 52, 39,
     87, 79, 59, 56, 109, 26, 77, 101, 102, 38,
   ]
-  |> test_generator(random.list(random.int(11, 111), of: 1000), with: 128)
+  |> test_generator(
+    random.fixed_size_list(random.int(11, 111), of: 1000),
+    with: 128,
+  )
 }
 
 pub fn int_list_behaves_the_same_as_elm_implementation_seed_11_test() {
@@ -113,7 +116,10 @@ pub fn int_list_behaves_the_same_as_elm_implementation_seed_11_test() {
     5, 3, 5, 6, 5, 4, 11, 1, 2, 8, 1, 4, 5, 6, 2, 8, 3, 6, 5, 8, 9, 7, 6, 3, 3,
     5, 4, 5, 3, 8, 1, 10, 5, 11,
   ]
-  |> test_generator(random.list(random.int(1, 11), of: 1000), with: 11)
+  |> test_generator(
+    random.fixed_size_list(random.int(1, 11), of: 1000),
+    with: 11,
+  )
 }
 
 pub fn int_list_behaves_the_same_as_elm_implementation_with_power_of_two_range_seed_11_test() {
@@ -168,7 +174,10 @@ pub fn int_list_behaves_the_same_as_elm_implementation_with_power_of_two_range_s
     20, 17, 30, 11, 8, 25, 27, 25, 8, 21, 15, 29, 5, 20, 28, 32, 30, 31, 21, 14,
     18, 31, 12, 25, 2, 5, 4, 22, 5, 27, 4, 29,
   ]
-  |> test_generator(random.list(random.int(32, 1), of: 1000), with: 11)
+  |> test_generator(
+    random.fixed_size_list(random.int(32, 1), of: 1000),
+    with: 11,
+  )
 }
 
 pub fn int_list_behaves_the_same_as_elm_implementation_with_power_of_two_range_seed_128_test() {
@@ -240,7 +249,10 @@ pub fn int_list_behaves_the_same_as_elm_implementation_with_power_of_two_range_s
     1013, 672, 377, 166, 774, 765, 207, 283, 542, 617, 814, 14, 893, 662, 64,
     247, 881, 172, 975, 1013,
   ]
-  |> test_generator(random.list(random.int(1024, 1), of: 1000), with: 128)
+  |> test_generator(
+    random.fixed_size_list(random.int(1024, 1), of: 1000),
+    with: 128,
+  )
 }
 
 pub fn float_behaves_the_same_as_elm_implementation_seed_11_test() {
@@ -505,7 +517,10 @@ pub fn float_behaves_the_same_as_elm_implementation_seed_11_test() {
     9.177548179994107, 10.018276653445115, 6.410776362766469, 3.4812152597297166,
     4.417584509853725, 7.210697679095041, 8.545690684094824,
   ]
-  |> test_generator(random.list(random.float(0.5, 11.1), of: 1000), with: 11)
+  |> test_generator(
+    random.fixed_size_list(random.float(0.5, 11.1), of: 1000),
+    with: 11,
+  )
 }
 
 pub fn float_behaves_the_same_as_elm_implementation_seed_128_test() {
@@ -778,7 +793,7 @@ pub fn float_behaves_the_same_as_elm_implementation_seed_128_test() {
     81.67063266878137, 24.144951274957172,
   ]
   |> test_generator(
-    random.list(random.float(-11.1, 123.02), of: 1000),
+    random.fixed_size_list(random.float(-11.1, 123.02), of: 1000),
     with: 128,
   )
 }
