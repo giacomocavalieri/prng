@@ -4,7 +4,7 @@
 > - 💡 is for non breaking changes
 > - 📓 is for documentation-related changes
 
-## Unreleased
+## v3.0.0 - 2023-11-08
 
 - 💡 The `prng/random` module gains the `set` function.
 - 💡 The `prng/random` module gains the `fixed_size_set` function.

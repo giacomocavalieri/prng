@@ -3,7 +3,7 @@
 [![Package Version](https://img.shields.io/hexpm/v/prng)](https://hex.pm/packages/prng)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/prng/)
 
-🎲 A pure random number generator (prng) for Gleam
+🎲 A Pure Random Number Generator (PRNG) for Gleam
 
 > ⚙️ This package works for both the Erlang and JavaScript target
 
@@ -18,15 +18,15 @@ gleam add prng
 ## Generating random values
 
 This package can help you generate any kind of random values you can think of.
-It can be useful in many different scenarios: when you need to simulate non
-deterministic actions, like rolling a dice or flipping a coin; when you need to
-write [property based tests](https://ferd.ca/property-based-testing-basics.html);
+It can be useful in many different scenarios: when you need to simulate
+non-deterministic actions, like rolling a dice or flipping a coin; when you need
+to write [property based tests](https://ferd.ca/property-based-testing-basics.html);
 or to make fun interactive games where you can spawn randomly generated enemies!
 
 ### A mindset shift
 
 The way random values are generated may be a bit confusing at first, especially
-coming from other languages like JavaScript. In such languages random number
+coming from other languages like JavaScript. In such languages, random number
 generation can be as simple as this:
 
 ```ts
@@ -51,7 +51,7 @@ let random_value: Float = random.sample(generator)
 ```
 
 Notice a subtle but fundamental difference: you're no longer simply generating
-a value, you're _describing_ the values you want to generate and the you can
+a value, you're _describing_ the values you want to generate and you can
 take those out of a generator with a variety of functions, like `sample`.
 
 This neat trick can give two great features:
@@ -69,10 +69,10 @@ This neat trick can give two great features:
 
 ## References
 
-This package and its documentation is based on the awesome
+This package and its documentation are based on the awesome
 [Elm implementation](https://package.elm-lang.org/packages/elm/random/1.0.0/)
 of [Permuted Congruential Generators](https://www.pcg-random.org).
-They have a great documentation full of clear and useful examples; if you are
+They have great documentation full of clear and useful examples; if you are
 curious, give it a look and show Elm some love!
 
 ## Contributing

@@ -1,6 +1,6 @@
 name = "prng"
-version = "2.0.0"
-description = "A pure random number generator"
+version = "3.0.0"
+description = "A Pure Random Number Generator"
 
 licences = ["Apache-2.0"]
 repository = { type = "github", user = "giacomocavalieri", repo = "prng" }
