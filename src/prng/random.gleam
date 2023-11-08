@@ -55,6 +55,7 @@ import gleam/iterator.{type Iterator}
 import gleam/list
 import gleam/order.{type Order, Eq, Gt, Lt}
 import gleam/pair
+import gleam/string
 import prng/seed.{type Seed}
 
 // DEFINITION ------------------------------------------------------------------ 
@@ -766,4 +767,33 @@ pub fn map5(
   let #(d, seed) = step(four, seed)
   let #(e, seed) = step(five, seed)
   #(fun(a, b, c, d, e), seed)
+}
+
+// CHARACTERS AND STRINGS ------------------------------------------------------
+
+/// Generates Strings with a random number of UTF code points, between
+/// 0 (included) and 32 (excluded).
+/// 
+/// This is similar to `fixed_size_string`, with the difference that the
+/// size is randomly generated as well.
+/// 
+pub fn string() -> Generator(String) {
+  use size <- then(int(0, 32))
+  fixed_size_string(size)
+}
+
+/// Generates Strings with the given number number of UTF code points.
+/// 
+pub fn fixed_size_string(size: Int) -> Generator(String) {
+  fixed_size_list(from: utf_codepoint(), of: size)
+  |> map(string.from_utf_codepoints)
+}
+
+/// Generates UTF [code points](https://en.wikipedia.org/wiki/Code_point) in
+/// the UTF-8 range.
+/// 
+pub fn utf_codepoint() -> Generator(UtfCodepoint) {
+  use raw_codepoint <- map(int(0, 1_112_063))
+  let assert Ok(codepoint) = string.utf_codepoint(raw_codepoint)
+  codepoint
 }
