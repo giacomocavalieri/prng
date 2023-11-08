@@ -6,6 +6,7 @@
 
 ## Unreleased
 
+- 💡 The `prng/random` module gains the `bit_array` function.
 - 💡 The `prng/random` module gains the `fixed_size_string` function.
 - 💡 The `prng/random` module gains the `string` function.
 - 💡 The `prng/random` module gains the `utf_codepoint` function.

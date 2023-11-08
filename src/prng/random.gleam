@@ -49,6 +49,7 @@
 //// </table>  
 //// 
 
+import gleam/bit_array
 import gleam/float
 import gleam/int
 import gleam/iterator.{type Iterator}
@@ -562,6 +563,12 @@ pub fn list(generator: Generator(a)) -> Generator(List(a)) {
   fixed_size_list(from: generator, of: size)
 }
 
+/// Generates `BitArray`s with a random size.
+/// 
+pub fn bit_array() -> Generator(BitArray) {
+  map(string(), bit_array.from_string)
+}
+
 // MAPPING ---------------------------------------------------------------------
 
 /// Transforms a generator into another one based on its generated values.
@@ -793,7 +800,7 @@ pub fn fixed_size_string(size: Int) -> Generator(String) {
 /// the UTF-8 range.
 /// 
 pub fn utf_codepoint() -> Generator(UtfCodepoint) {
-  use raw_codepoint <- map(int(0, 1_112_063))
+  use raw_codepoint <- map(int(0, 0x10FFFF))
   let assert Ok(codepoint) = string.utf_codepoint(raw_codepoint)
   codepoint
 }
