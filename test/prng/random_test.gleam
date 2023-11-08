@@ -1,5 +1,6 @@
 import gleam/iterator
 import gleam/list
+import gleam/map
 import gleeunit/should
 import prng/random.{type Generator}
 import prng/seed
@@ -85,6 +86,27 @@ pub fn fixed_size_list_generates_lists_of_the_given_length_test() {
 pub fn list_returns_list_in_range_0_32_test() {
   use list <- test(for_all: random.list(random.int(1, 10)))
   let length = list.length(list)
+  0 <= length && length <= 32
+}
+
+pub fn fixed_size_dict_generates_maps_of_at_most_the_given_length_test() {
+  let keys = random.string()
+  let values = random.int(1, 10)
+
+  let empty_maps = random.fixed_size_dict(keys, values, of: 0)
+  test(for_all: empty_maps, that: fn(map) { list.is_empty(map.keys(map)) })
+
+  let empty_maps = random.fixed_size_dict(keys, values, of: -1)
+  test(for_all: empty_maps, that: fn(map) { list.is_empty(map.keys(map)) })
+
+  let maps = random.fixed_size_dict(keys, values, of: 10)
+  use map <- test(for_all: maps)
+  list.length(map.keys(map)) <= 10
+}
+
+pub fn dict_returns_maps_in_range_0_32_test() {
+  use map <- test(for_all: random.dict(random.string(), random.int(1, 10)))
+  let length = list.length(map.keys(map))
   0 <= length && length <= 32
 }
 

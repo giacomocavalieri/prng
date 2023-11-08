@@ -15,6 +15,9 @@
 ////   <td>
 ////     <a href="#int">int</a>,
 ////     <a href="#float">float</a>,
+////     <a href="#string">string</a>,
+////     <a href="#fixed_size_string">fixed_size_string</a>,
+////     <a href="#bit_array">bit_array</a>,
 ////     <a href="#uniform">uniform</a>,
 ////     <a href="#weighted">weighted</a>,
 ////     <a href="#choose">choose</a>,
@@ -26,9 +29,18 @@
 ////   <td>
 ////     <a href="#map">map</a>,
 ////     <a href="#then">then</a>,
+////     <a href="#pair">pair</a>
+////   </td>
+//// </tr>
+//// <tr>
+////   <td>Generating common data structures</td>
+////   <td>
 ////     <a href="#fixed_size_list">fixed_size_list</a>,
 ////     <a href="#list">list</a>,
-////     <a href="#pair">pair</a>
+////     <a href="#fixed_size_dict">fixed_size_dict</a>,
+////     <a href="#dict">dict</a>
+////     <a href="#fixed_size_set">fixed_size_set</a>,
+////     <a href="#set">set</a>
 ////   </td>
 //// </tr>
 //// <tr>
@@ -50,10 +62,12 @@
 //// 
 
 import gleam/bit_array
+import gleam/bool
 import gleam/float
 import gleam/int
 import gleam/iterator.{type Iterator}
 import gleam/list
+import gleam/map.{type Map}
 import gleam/order.{type Order, Eq, Gt, Lt}
 import gleam/pair
 import gleam/string
@@ -561,6 +575,60 @@ pub fn list(generator: Generator(a)) -> Generator(List(a)) {
   // than enough
   use size <- then(int(0, 32))
   fixed_size_list(from: generator, of: size)
+}
+
+/// Generates a `Map(k, v)` where each key value pair is generated using the
+/// provided generators.
+/// 
+/// > ⚠️ This function makes a best effort at generating a map with exactly the
+/// > specified number of keys, but beware that it may contain less items if
+/// > the keys generator cannot generate enough distinct keys.
+/// 
+pub fn fixed_size_dict(
+  keys keys: Generator(k),
+  values values: Generator(v),
+  of size: Int,
+) {
+  do_fixed_size_dict(keys, values, size, 0, 0, map.new())
+}
+
+fn do_fixed_size_dict(
+  keys: Generator(k),
+  values: Generator(v),
+  size: Int,
+  unique_keys: Int,
+  consecutive_attempts: Int,
+  acc: Map(k, v),
+) -> Generator(Map(k, v)) {
+  let has_required_size = unique_keys == size
+  use <- bool.guard(when: has_required_size, return: constant(acc))
+
+  let has_reached_maximum_attempts = consecutive_attempts <= 10
+  use <- bool.guard(when: has_reached_maximum_attempts, return: constant(acc))
+
+  use key <- then(keys)
+  case map.has_key(acc, key) {
+    True ->
+      { consecutive_attempts + 1 }
+      |> do_fixed_size_dict(keys, values, size, unique_keys, _, acc)
+    False -> {
+      use value <- then(values)
+      map.insert(acc, key, value)
+      |> do_fixed_size_dict(keys, values, size, unique_keys + 1, 0, _)
+    }
+  }
+}
+
+/// Generates a `Map(k, v)` where each key value pair is generated using the
+/// provided generators.
+/// 
+/// This is similar to `fixed_size_dict` with the difference that the map is
+/// going to have a random number of key-value pairs between 0 (inclusive) and
+/// 32 (inclusive).
+/// 
+pub fn dict(keys keys: Generator(k), values values: Generator(v)) {
+  use size <- then(int(0, 32))
+  fixed_size_dict(keys, values, size)
 }
 
 /// Generates `BitArray`s with a random size.
