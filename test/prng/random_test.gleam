@@ -1,6 +1,7 @@
 import gleam/iterator
 import gleam/list
 import gleam/map
+import gleam/set
 import gleeunit/should
 import prng/random.{type Generator}
 import prng/seed
@@ -108,6 +109,26 @@ pub fn dict_returns_maps_in_range_0_32_test() {
   use map <- test(for_all: random.dict(random.string(), random.int(1, 10)))
   let length = list.length(map.keys(map))
   0 <= length && length <= 32
+}
+
+pub fn fixed_size_set_generates_sets_of_at_most_the_given_length_test() {
+  let values = random.string()
+
+  let empty_sets = random.fixed_size_set(values, of: 0)
+  test(for_all: empty_sets, that: fn(set) { set.size(set) == 0 })
+
+  let empty_sets = random.fixed_size_set(values, of: -1)
+  test(for_all: empty_sets, that: fn(set) { set.size(set) == 0 })
+
+  let sets = random.fixed_size_set(values, of: 10)
+  use set <- test(for_all: sets)
+  set.size(set) <= 10
+}
+
+pub fn set_returns_sets_in_range_0_32_test() {
+  use set <- test(for_all: random.set(random.string()))
+  let size = set.size(set)
+  0 <= size && size <= 32
 }
 
 pub fn uniform_generates_values_from_the_given_list_test() {

@@ -6,6 +6,8 @@
 
 ## Unreleased
 
+- 💡 The `prng/random` module gains the `set` function.
+- 💡 The `prng/random` module gains the `fixed_size_set` function.
 - 💡 The `prng/random` module gains the `dict` function.
 - 💡 The `prng/random` module gains the `fixed_size_dict` function.
 - 💡 The `prng/random` module gains the `bit_array` function.

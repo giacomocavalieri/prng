@@ -70,6 +70,7 @@ import gleam/list
 import gleam/map.{type Map}
 import gleam/order.{type Order, Eq, Gt, Lt}
 import gleam/pair
+import gleam/set.{type Set}
 import gleam/string
 import prng/seed.{type Seed}
 
@@ -598,6 +599,8 @@ fn do_fixed_size_dict(
   size: Int,
   unique_keys: Int,
   consecutive_attempts: Int,
+  // ^-- this is the number of consecutive attempts at generating a key that
+  //     doesn't already exist in the map we're generating
   acc: Map(k, v),
 ) -> Generator(Map(k, v)) {
   let has_required_size = unique_keys == size
@@ -605,13 +608,19 @@ fn do_fixed_size_dict(
 
   let has_reached_maximum_attempts = consecutive_attempts <= 10
   use <- bool.guard(when: has_reached_maximum_attempts, return: constant(acc))
+  // ^-- if after 10 tries, we couldn't still generate a key that doesn't
+  //     already exist, then we give up and return a map smaller than required
 
   use key <- then(keys)
   case map.has_key(acc, key) {
     True ->
+      // ^-- if the key is already present in the map we can't add it and we
+      //     increase the number of failed attempts at generating a distinct key
       { consecutive_attempts + 1 }
       |> do_fixed_size_dict(keys, values, size, unique_keys, _, acc)
     False -> {
+      // ^-- if we could indeed generate a new key, we set the number of failed
+      //     attempts to zero and are ready to start again with a new one
       use value <- then(values)
       map.insert(acc, key, value)
       |> do_fixed_size_dict(keys, values, size, unique_keys + 1, 0, _)
@@ -629,6 +638,65 @@ fn do_fixed_size_dict(
 pub fn dict(keys keys: Generator(k), values values: Generator(v)) {
   use size <- then(int(0, 32))
   fixed_size_dict(keys, values, size)
+}
+
+/// Generates a `Set(a)` where each item is generated using the provided
+/// generator.
+/// 
+/// > ⚠️ This function makes a best effort at generating a set with exactly the
+/// > specified number of items, but beware that it may contain less items if
+/// > the given generator cannot generate enough distinct values.
+/// 
+pub fn fixed_size_set(
+  from generator: Generator(a),
+  of size: Int,
+) -> Generator(Set(a)) {
+  do_fixed_size_set(generator, size, 0, 0, set.new())
+}
+
+fn do_fixed_size_set(
+  generator: Generator(a),
+  size: Int,
+  unique_items: Int,
+  consecutive_attempts: Int,
+  // ^-- this is the number of consecutive attempts at generating a key that
+  //     doesn't already exist in the map we're generating
+  acc: Set(a),
+) -> Generator(Set(a)) {
+  let has_required_size = unique_items == size
+  use <- bool.guard(when: has_required_size, return: constant(acc))
+
+  let has_reached_maximum_attempts = consecutive_attempts <= 10
+  use <- bool.guard(when: has_reached_maximum_attempts, return: constant(acc))
+  // ^-- if after 10 tries, we couldn't still generate an item that doesn't
+  //     already exist in the set, then we give up and return a set smaller than
+  //     required
+
+  use item <- then(generator)
+  case set.contains(acc, item) {
+    True ->
+      // ^-- if the item is already present in the set we can't add it and we
+      //     increase the number of failed attempts at generating a new item
+      { consecutive_attempts + 1 }
+      |> do_fixed_size_set(generator, size, unique_items, _, acc)
+    False -> {
+      // ^-- if we could indeed generate a new item, we set the number of failed
+      //     attempts to zero and are ready to start again with a new one
+      set.insert(acc, item)
+      |> do_fixed_size_set(generator, size, unique_items + 1, 0, _)
+    }
+  }
+}
+
+/// Generates a `Set(a)` where each item is generated using the provided
+/// generator.
+/// 
+/// This is similar to `fixed_size_set` with the difference that the set is
+/// going to have a random size between 0 (inclusive) and 32 (inclusive).
+/// 
+pub fn set(generator: Generator(a)) -> Generator(Set(a)) {
+  use size <- then(int(0, 32))
+  fixed_size_set(from: generator, of: size)
 }
 
 /// Generates `BitArray`s with a random size.
