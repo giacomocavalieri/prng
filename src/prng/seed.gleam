@@ -16,5 +16,5 @@ pub fn new(int: Int) -> Seed
 /// generator using the `random.step` function.
 /// 
 pub fn random() -> Seed {
-  new(int.random(0, 4_294_967_296))
+  new(int.random(4_294_967_296))
 }
