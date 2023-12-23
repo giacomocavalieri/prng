@@ -181,10 +181,11 @@ pub fn choose_behaves_the_same_as_uniform_test() {
 pub fn uniform_behaves_like_weighted_when_all_weights_are_equal_test() {
   let gen1 = random.uniform("Luois", ["Glob", "Hayleigh", "Ben"])
   let gen2 =
-    random.weighted(
-      #(2.2, "Luois"),
-      [#(2.2, "Glob"), #(2.2, "Hayleigh"), #(2.2, "Ben")],
-    )
+    random.weighted(#(2.2, "Luois"), [
+      #(2.2, "Glob"),
+      #(2.2, "Hayleigh"),
+      #(2.2, "Ben"),
+    ])
   behaves_the_same(gen1, gen2)
 }
 
@@ -230,14 +231,9 @@ pub fn map5_maps_the_generated_value_test() {
   let [gen1, gen2, gen3, gen4, gen5] =
     list.map([1, 2, 3, 4, 5], random.constant)
   let examples =
-    random.map5(
-      gen1,
-      gen2,
-      gen3,
-      gen4,
-      gen5,
-      fn(a, b, c, d, e) { #(a, b, c, d, e) },
-    )
+    random.map5(gen1, gen2, gen3, gen4, gen5, fn(a, b, c, d, e) {
+      #(a, b, c, d, e)
+    })
   test(for_all: examples, that: fn(value) { value == #(1, 2, 3, 4, 5) })
 }
 
