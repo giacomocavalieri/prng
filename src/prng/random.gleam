@@ -63,11 +63,11 @@
 
 import gleam/bit_array
 import gleam/bool
+import gleam/dict.{type Dict}
 import gleam/float
 import gleam/int
 import gleam/iterator.{type Iterator}
 import gleam/list
-import gleam/map.{type Map}
 import gleam/order.{type Order, Eq, Gt, Lt}
 import gleam/pair
 import gleam/set.{type Set}
@@ -578,7 +578,7 @@ pub fn list(generator: Generator(a)) -> Generator(List(a)) {
   fixed_size_list(from: generator, of: size)
 }
 
-/// Generates a `Map(k, v)` where each key value pair is generated using the
+/// Generates a `Dict(k, v)` where each key value pair is generated using the
 /// provided generators.
 /// 
 /// > ⚠️ This function makes a best effort at generating a map with exactly the
@@ -590,7 +590,7 @@ pub fn fixed_size_dict(
   values values: Generator(v),
   of size: Int,
 ) {
-  do_fixed_size_dict(keys, values, size, 0, 0, map.new())
+  do_fixed_size_dict(keys, values, size, 0, 0, dict.new())
 }
 
 fn do_fixed_size_dict(
@@ -601,8 +601,8 @@ fn do_fixed_size_dict(
   consecutive_attempts: Int,
   // ^-- this is the number of consecutive attempts at generating a key that
   //     doesn't already exist in the map we're generating
-  acc: Map(k, v),
-) -> Generator(Map(k, v)) {
+  acc: Dict(k, v),
+) -> Generator(Dict(k, v)) {
   let has_required_size = unique_keys == size
   use <- bool.guard(when: has_required_size, return: constant(acc))
 
@@ -612,7 +612,7 @@ fn do_fixed_size_dict(
   //     already exist, then we give up and return a map smaller than required
 
   use key <- then(keys)
-  case map.has_key(acc, key) {
+  case dict.has_key(acc, key) {
     True ->
       // ^-- if the key is already present in the map we can't add it and we
       //     increase the number of failed attempts at generating a distinct key
@@ -622,7 +622,7 @@ fn do_fixed_size_dict(
       // ^-- if we could indeed generate a new key, we set the number of failed
       //     attempts to zero and are ready to start again with a new one
       use value <- then(values)
-      map.insert(acc, key, value)
+      dict.insert(acc, key, value)
       |> do_fixed_size_dict(keys, values, size, unique_keys + 1, 0, _)
     }
   }
