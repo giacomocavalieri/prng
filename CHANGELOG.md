@@ -3,11 +3,16 @@
 > - 💥 is for breaking changes
 > - 💡 is for non breaking changes
 > - 📓 is for documentation-related changes
+> - 🐛 is for bug fixes
+
+## v3.0.2 - 2024-03-19
+
+- 🐛 Fixed a bug in the `fixed_size_dict` function.
 
 ## v3.0.1 - 2024-01-19
 
-- 💡 Drop use of reserved keywords
-- 💡 Replace deprecated `gleam/map` with `gleam/dict`
+- 💡 Drop use of reserved keywords.
+- 💡 Replace deprecated `gleam/map` with `gleam/dict`.
 
 ## v3.0.0 - 2023-11-08
 
