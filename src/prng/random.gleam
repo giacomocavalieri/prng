@@ -590,7 +590,8 @@ pub fn fixed_size_dict(
   values values: Generator(v),
   of size: Int,
 ) {
-  do_fixed_size_dict(keys, values, size, 0, 0, dict.new())
+  int.max(size, 0)
+  |> do_fixed_size_dict(keys, values, _, 0, 0, dict.new())
 }
 
 fn do_fixed_size_dict(
@@ -606,7 +607,7 @@ fn do_fixed_size_dict(
   let has_required_size = unique_keys == size
   use <- bool.guard(when: has_required_size, return: constant(acc))
 
-  let has_reached_maximum_attempts = consecutive_attempts <= 10
+  let has_reached_maximum_attempts = consecutive_attempts >= 10
   use <- bool.guard(when: has_reached_maximum_attempts, return: constant(acc))
   // ^-- if after 10 tries, we couldn't still generate a key that doesn't
   //     already exist, then we give up and return a map smaller than required
@@ -651,7 +652,8 @@ pub fn fixed_size_set(
   from generator: Generator(a),
   of size: Int,
 ) -> Generator(Set(a)) {
-  do_fixed_size_set(generator, size, 0, 0, set.new())
+  int.max(size, 0)
+  |> do_fixed_size_set(generator, _, 0, 0, set.new())
 }
 
 fn do_fixed_size_set(
@@ -666,7 +668,7 @@ fn do_fixed_size_set(
   let has_required_size = unique_items == size
   use <- bool.guard(when: has_required_size, return: constant(acc))
 
-  let has_reached_maximum_attempts = consecutive_attempts <= 10
+  let has_reached_maximum_attempts = consecutive_attempts >= 10
   use <- bool.guard(when: has_reached_maximum_attempts, return: constant(acc))
   // ^-- if after 10 tries, we couldn't still generate an item that doesn't
   //     already exist in the set, then we give up and return a set smaller than
