@@ -102,7 +102,8 @@ pub fn fixed_size_dict_generates_maps_of_at_most_the_given_length_test() {
 
   let maps = random.fixed_size_dict(keys, values, of: 10)
   use map <- do_test(for_all: maps)
-  list.length(dict.keys(map)) <= 10
+  let length = list.length(dict.keys(map))
+  0 < length && length <= 10
 }
 
 pub fn dict_returns_maps_in_range_0_32_test() {
@@ -122,7 +123,8 @@ pub fn fixed_size_set_generates_sets_of_at_most_the_given_length_test() {
 
   let sets = random.fixed_size_set(values, of: 10)
   use set <- do_test(for_all: sets)
-  set.size(set) <= 10
+  let size = set.size(set)
+  0 < size && size <= 10
 }
 
 pub fn set_returns_sets_in_range_0_32_test() {
