@@ -5,6 +5,10 @@
 > - 📓 is for documentation-related changes
 > - 🐛 is for bug fixes
 
+## v3.0.3 - 2024-04-22
+
+- 💡 Rename ffi modules to avoid conflicts on the Erlang target.
+
 ## v3.0.2 - 2024-03-19
 
 - 🐛 Fixed a bug in the `fixed_size_dict` function.

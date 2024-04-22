@@ -1,4 +1,4 @@
--module(ffi).
+-module(prng_ffi).
 -export([new_seed/1, seed_to_int/1, random_int/3, random_float/3]).
 
 new_seed(From) ->
