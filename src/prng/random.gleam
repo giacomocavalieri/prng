@@ -410,7 +410,7 @@ pub fn try_uniform(options: List(a)) -> Result(Generator(a), Nil) {
 /// times like this:
 ///
 /// ```gleam
-/// let loaded_coin = random.weighted(#(Heads, 0.75), [#(Tails, 0.25)])
+/// let loaded_coin = random.weighted(#(0.75, Heads), [#(0.25, Tails)])
 /// ```
 ///
 /// In this example the weights add up to 1, but you could use any number: the
