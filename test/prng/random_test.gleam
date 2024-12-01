@@ -1,7 +1,7 @@
 import gleam/dict
-import gleam/iterator
 import gleam/list
 import gleam/set
+import gleam/yielder
 import gleeunit/should
 import prng/random.{type Generator}
 import prng/seed
@@ -9,11 +9,11 @@ import prng/seed
 fn do_test(for_all generator: Generator(a), that property: fn(a) -> Bool) -> Nil {
   let number_of_samples = 1000
   let samples =
-    random.to_random_iterator(generator)
-    |> iterator.take(number_of_samples)
-    |> iterator.to_list
+    random.to_random_yielder(generator)
+    |> yielder.take(number_of_samples)
+    |> yielder.to_list
 
-  // The iterator should be infinite, so we _must_ always have 1000 samples
+  // The yielder should be infinite, so we _must_ always have 1000 samples
   list.length(samples)
   |> should.equal(number_of_samples)
 
@@ -29,13 +29,13 @@ fn behaves_the_same(gen1: Generator(a), gen2: Generator(a)) -> Nil {
     |> random.random_sample
 
   let samples1 =
-    random.to_iterator(gen1, seed)
-    |> iterator.take(1000)
-    |> iterator.to_list
+    random.to_yielder(gen1, seed)
+    |> yielder.take(1000)
+    |> yielder.to_list
   let samples2 =
-    random.to_iterator(gen2, seed)
-    |> iterator.take(1000)
-    |> iterator.to_list
+    random.to_yielder(gen2, seed)
+    |> yielder.take(1000)
+    |> yielder.to_list
 
   should.equal(samples1, samples2)
 }

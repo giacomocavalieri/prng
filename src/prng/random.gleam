@@ -48,14 +48,14 @@
 ////   <td>
 ////     <a href="#step">step</a>,
 ////     <a href="#sample">sample</a>,
-////     <a href="#to_iterator">to_iterator</a>
+////     <a href="#to_yielder">to_yielder</a>
 ////   </td>
 //// </tr>
 //// <tr>
 ////   <td>Getting truly random values out of generators</td>
 ////   <td>
 ////     <a href="#random_sample">random_sample</a>,
-////     <a href="#to_random_iterator">to_random_iterator</a>
+////     <a href="#to_random_yielder">to_random_yielder</a>
 ////   </td>
 //// </tr>
 //// </table>
@@ -66,12 +66,12 @@ import gleam/bool
 import gleam/dict.{type Dict}
 import gleam/float
 import gleam/int
-import gleam/iterator.{type Iterator}
 import gleam/list
 import gleam/order.{type Order, Eq, Gt, Lt}
 import gleam/pair
 import gleam/set.{type Set}
 import gleam/string
+import gleam/yielder.{type Yielder}
 import prng/seed.{type Seed}
 
 // DEFINITION ------------------------------------------------------------------
@@ -136,8 +136,8 @@ pub opaque type Generator(a) {
 /// subsequent calls to `step` to get other random values.
 ///
 /// Stepping a generator by hand can be quite cumbersome, so I recommend you
-/// try [`to_iterator`](#to_iterator),
-/// [`to_random_iterator`](#to_random_iterator), or [`sample`](#sample) instead.
+/// try [`to_yielder`](#to_yielder),
+/// [`to_random_yielder`](#to_random_yielder), or [`sample`](#sample) instead.
 ///
 /// ## Examples
 ///
@@ -189,11 +189,11 @@ pub fn sample(from generator: Generator(a), with seed: Seed) -> a {
 /// ```
 ///
 pub fn random_sample(generator: Generator(a)) -> a {
-  // ⚠️ [ref:iterator_infinite] this is based on the assumption that, a sampled
+  // ⚠️ [ref:yielder_infinite] this is based on the assumption that, a sampled
   // generator will always yield at least one value. This is true since the
-  // `to_iterator` implementation produces an infinite stream of values.
+  // `to_yielder` implementation produces an infinite stream of values.
   // However, if the implementation were to change this piece of code may break!
-  let assert Ok(result) = iterator.first(to_random_iterator(generator))
+  let assert Ok(result) = yielder.first(to_random_yielder(generator))
   result
 }
 
@@ -205,10 +205,10 @@ pub fn random_sample(generator: Generator(a)) -> a {
 /// function.
 ///
 /// If you want to have control over the initial seed used to get the infinite
-/// sequence of values, you can use `to_iterator`.
+/// sequence of values, you can use `to_yielder`.
 ///
-pub fn to_random_iterator(from generator: Generator(a)) -> Iterator(a) {
-  to_iterator(generator, seed.random())
+pub fn to_random_yielder(from generator: Generator(a)) -> Yielder(a) {
+  to_yielder(generator, seed.random())
 }
 
 /// Turns the given generator into an infinite stream of random values generated
@@ -218,15 +218,15 @@ pub fn to_random_iterator(from generator: Generator(a)) -> Iterator(a) {
 /// infinite sequence.
 ///
 /// If you don't care about the initial seed and reproducibility is not your
-/// goal, you can use `to_random_iterator` which works like this function and
+/// goal, you can use `to_random_yielder` which works like this function and
 /// randomly picks the initial seed.
 ///
-pub fn to_iterator(generator: Generator(a), seed: Seed) -> Iterator(a) {
-  use seed <- iterator.unfold(from: seed)
+pub fn to_yielder(generator: Generator(a), seed: Seed) -> Yielder(a) {
+  use seed <- yielder.unfold(from: seed)
   let #(value, new_seed) = step(generator, seed)
-  // [tag:iterator_infinite] this will generate an infinite stream of values
-  // since it never returns an `iterator.Done`
-  iterator.Next(element: value, accumulator: new_seed)
+  // [tag:yielder_infinite] this will generate an infinite stream of values
+  // since it never returns an `yielder.Done`
+  yielder.Next(element: value, accumulator: new_seed)
 }
 
 // BASIC FFI BUILDERS ----------------------------------------------------------
