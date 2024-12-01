@@ -5,6 +5,12 @@
 > - 📓 is for documentation-related changes
 > - 🐛 is for bug fixes
 
+## v4.0.0 - Unreleased
+
+- 💥 Remove deprecated `Iterator` in favor of `Yielder` from `gleam_yielder`, and rename functions accordingly.
+- 💥 `to_random_iterator` becomes `to_random_yielder`.
+- 💥 `to_iterator` becomes `to_yielder`.
+
 ## v3.0.3 - 2024-04-22
 
 - 💡 Rename ffi modules to avoid conflicts on the Erlang target.
