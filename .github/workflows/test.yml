@@ -20,8 +20,8 @@ jobs:
       - name: setup beam
         uses: erlef/setup-beam@v1.16.0
         with:
-          otp-version: "26.0.2"
-          gleam-version: "1.0.0"
+          otp-version: "27.0.0"
+          gleam-version: "1.6.3"
           rebar3-version: "3"
       - name: check formatting
         run: gleam format --check src test
