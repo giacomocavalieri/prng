@@ -18,7 +18,7 @@ jobs:
         with:
           unused_tags: "forbid"
       - name: setup beam
-        uses: erlef/setup-beam@v1.16.0
+        uses: erlef/setup-beam@v1
         with:
           otp-version: "27.0.0"
           gleam-version: "1.6.3"
