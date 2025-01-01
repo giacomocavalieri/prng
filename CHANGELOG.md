@@ -5,7 +5,7 @@
 > - 📓 is for documentation-related changes
 > - 🐛 is for bug fixes
 
-## Unreleased
+## v4.0.1 - 2025-01-01 (Happy new year! 🎉)
 
 - 🐛 Fix a bug that would cause an infinite loop when generating integers for
   the javascript target.
