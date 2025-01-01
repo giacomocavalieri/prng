@@ -5,9 +5,10 @@
 > - 📓 is for documentation-related changes
 > - 🐛 is for bug fixes
 
-## v4.0.0 - Unreleased
+## v4.0.0 - 2024-12-02
 
-- 💥 Remove deprecated `Iterator` in favor of `Yielder` from `gleam_yielder`, and rename functions accordingly.
+- 💥 Remove deprecated `Iterator` in favor of `Yielder` from `gleam_yielder`,
+  and rename functions accordingly.
 - 💥 `to_random_iterator` becomes `to_random_yielder`.
 - 💥 `to_iterator` becomes `to_yielder`.
 
