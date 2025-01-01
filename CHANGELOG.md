@@ -5,6 +5,11 @@
 > - 📓 is for documentation-related changes
 > - 🐛 is for bug fixes
 
+## Unreleased
+
+- 🐛 Fix a bug that would cause an infinite loop when generating integers for
+  the javascript target.
+
 ## v4.0.0 - 2024-12-02
 
 - 💥 Remove deprecated `Iterator` in favor of `Yielder` from `gleam_yielder`,
