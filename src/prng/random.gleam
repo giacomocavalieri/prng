@@ -955,3 +955,137 @@ fn utf_codepoint_in_range(lower: Int, upper: Int) -> Generator(UtfCodepoint) {
   //        unicode chars in the given range are pretty rare and we're not
   //        getting stuck in the recursion for a long time
 }
+
+// LISTS -----------------------------------------------------------------------
+
+/// Generates a shuffled list from a given list.
+///
+/// ## Example
+///
+/// ```gleam
+/// list.range(1, 10) |> list_shuffle() |> random_sample()
+/// // -> [1, 6, 9, 10, 3, 8, 4, 2, 7, 5]
+/// ```
+///
+pub fn list_shuffle(list: List(a)) -> Generator(List(a)) {
+  fixed_size_list(std_float(), list.length(list))
+  |> map(fn(random_list) {
+    list.zip(random_list, list)
+    |> do_list_shuffle_by_pair_indexes()
+    |> shuffle_pair_unwrap_loop([])
+  })
+}
+
+fn shuffle_pair_unwrap_loop(list: List(#(Float, a)), acc: List(a)) -> List(a) {
+  case list {
+    [] -> acc
+    [elem_pair, ..enumerable] ->
+      shuffle_pair_unwrap_loop(enumerable, [elem_pair.1, ..acc])
+  }
+}
+
+fn do_list_shuffle_by_pair_indexes(
+  list_of_pairs: List(#(Float, a)),
+) -> List(#(Float, a)) {
+  list.sort(
+    list_of_pairs,
+    fn(a_pair: #(Float, a), b_pair: #(Float, a)) -> Order {
+      float.compare(a_pair.0, b_pair.0)
+    },
+  )
+}
+
+/// Generates a random sample of k elements from a list using reservoir sampling
+/// via Algo L. Generates an empty list if the sample size is less than or equal
+/// to 0.
+///
+/// Order is not random, only selection is.
+///
+/// ## Examples
+///
+/// ```gleam
+/// list.range(1, 5) |> list_sample(3) |> random_sample()
+/// // -> [2, 4, 5]  // A random sample of 3 items
+/// ```
+///
+pub fn list_sample(list: List(a), k: Int) -> Generator(List(a)) {
+  case k <= 0 {
+    True -> constant([])
+    False -> {
+      let #(reservoir, list) = list.split(list, k)
+
+      case list.length(reservoir) < k {
+        True -> constant(reservoir)
+        False -> {
+          let reservoir =
+            reservoir
+            |> list.map2(list.range(0, k - 1), _, fn(a, b) { #(a, b) })
+            |> dict.from_list()
+
+          use random_log <- then(log_random())
+          let w = float.exponential(random_log /. int.to_float(k))
+
+          list_sample_loop(list, reservoir, k, k, w) |> map(dict.values)
+        }
+      }
+    }
+  }
+}
+
+fn list_sample_loop(
+  list,
+  reservoir: Dict(Int, a),
+  k,
+  index: Int,
+  w: Float,
+) -> Generator(Dict(Int, a)) {
+  use random_log <- then(log_random())
+  let skip = {
+    let assert Ok(log_result) = float.logarithm(1.0 -. w)
+    random_log /. log_result |> float.floor |> float.round
+  }
+
+  let index = index + skip + 1
+
+  case list.drop(list, skip) {
+    [] -> constant(reservoir)
+    [first, ..rest] -> {
+      use random_int <- then(std_int(k))
+      let reservoir = dict.insert(reservoir, random_int, first)
+
+      use random_log <- then(log_random())
+      let w = w *. float.exponential(random_log /. int.to_float(k))
+
+      list_sample_loop(rest, reservoir, k, index, w)
+    }
+  }
+}
+
+fn log_random() -> Generator(Float) {
+  std_float()
+  |> map(fn(random_float) {
+    let min_positive = 2.2250738585072014e-308
+    let assert Ok(random) = float.logarithm(random_float +. min_positive)
+    random
+  })
+}
+
+fn std_int(max: Int) -> Generator(Int) {
+  std_float()
+  |> map(fn(number) {
+    number
+    |> float.multiply(int.to_float(max))
+    |> float.floor
+    |> float.round
+  })
+}
+
+fn std_float() -> Generator(Float) {
+  float(0.0, 1.0)
+  |> then(fn(number) {
+    case number >=. 1.0 {
+      False -> constant(number)
+      True -> std_float()
+    }
+  })
+}
