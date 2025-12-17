@@ -47,7 +47,20 @@ will look like:
 
 ```gleam
 let generator: Generator(Float) = random.float(0.0, 1.0)
-let random_value: Float = random.sample(generator)
+
+// You truly want a random value and you don't need
+// to reproduce your random runs
+let random_value: Float = random.random_sample(generator)
+
+// ... or you care about reproducing your random runs, 
+// you can set the seed for reproduceability!
+let seed1 = seed.new(42)
+let seed2 = seed.new(42)
+
+// Now value 1 and value 2 are the same, because
+// they had the same seed. 
+let value1 = random.sample(generator, with: seed1)
+let value2 = random.sample(generator, with: seed2)
 ```
 
 Notice a subtle but fundamental difference: you're no longer simply generating
