@@ -955,3 +955,164 @@ fn utf_codepoint_in_range(lower: Int, upper: Int) -> Generator(UtfCodepoint) {
   //        unicode chars in the given range are pretty rare and we're not
   //        getting stuck in the recursion for a long time
 }
+
+// LISTS -----------------------------------------------------------------------
+
+/// Generates a shuffled list from a given list.
+///
+/// ## Example
+///
+/// ```gleam
+/// list.range(1, 10) |> list_shuffle() |> random_sample()
+/// // -> [1, 6, 9, 10, 3, 8, 4, 2, 7, 5]
+/// ```
+///
+pub fn list_shuffle(list: List(a)) -> Generator(List(a)) {
+  fixed_size_list(std_float(), list.length(list))
+  |> map(fn(random_list) {
+    list.zip(random_list, list)
+    |> do_list_shuffle_by_pair_indexes()
+    |> shuffle_pair_unwrap_loop([])
+  })
+}
+
+fn shuffle_pair_unwrap_loop(list: List(#(Float, a)), acc: List(a)) -> List(a) {
+  case list {
+    [] -> acc
+    [elem_pair, ..enumerable] ->
+      shuffle_pair_unwrap_loop(enumerable, [elem_pair.1, ..acc])
+  }
+}
+
+fn do_list_shuffle_by_pair_indexes(
+  list_of_pairs: List(#(Float, a)),
+) -> List(#(Float, a)) {
+  list.sort(
+    list_of_pairs,
+    fn(a_pair: #(Float, a), b_pair: #(Float, a)) -> Order {
+      float.compare(a_pair.0, b_pair.0)
+    },
+  )
+}
+
+/// Generates a random sample of up to n elements from a list using reservoir
+/// sampling via [Algorithm L](https://en.wikipedia.org/wiki/Reservoir_sampling#Optimal:_Algorithm_L).
+/// Returns an empty list if the sample size is less than or equal to 0.
+///
+/// Order is not random, only selection is.
+///
+/// ## Examples
+///
+/// ```gleam
+/// list.range(1, 5) |> list_sample(3) |> random_sample()
+/// // -> [2, 4, 5]  // A random sample of 3 items
+/// ```
+///
+pub fn list_sample(list: List(a), up_to n: Int) -> Generator(List(a)) {
+  let #(reservoir, rest) = build_reservoir(from: list, sized: n)
+
+  case dict.is_empty(reservoir) {
+    // If the reservoire is empty that means we were asking to sample 0 or
+    // less items. That doesn't make much sense, so we just return an empty
+    // list.
+    True -> constant([])
+
+    // Otherwise we keep looping over the remaining part of the list replacing
+    // random elements in the reservoir.
+    False -> {
+      use random_log <- then(log_random())
+      let w = float.exponential(random_log /. int.to_float(n))
+
+      list_sample_loop(rest, reservoir, n, w) |> map(dict.values)
+    }
+  }
+}
+
+fn list_sample_loop(
+  list: List(a),
+  reservoir: Dict(Int, a),
+  n: Int,
+  w: Float,
+) -> Generator(Dict(Int, a)) {
+  use random_log <- then(log_random())
+  let skip = {
+    let assert Ok(log) = float.logarithm(1.0 -. w)
+    float.round(float.floor(random_log /. log))
+  }
+
+  case list.drop(list, skip) {
+    [] -> constant(reservoir)
+    [first, ..rest] -> {
+      use random_int <- then(std_int(n))
+      let reservoir = dict.insert(reservoir, random_int, first)
+
+      use random_log <- then(log_random())
+      let w = w *. float.exponential(random_log /. int.to_float(n))
+
+      list_sample_loop(rest, reservoir, n, w)
+    }
+  }
+}
+
+const min_positive = 2.2250738585072014e-308
+
+fn log_random() -> Generator(Float) {
+  std_float()
+  |> map(fn(random_float) {
+    let assert Ok(random) = float.logarithm(random_float +. min_positive)
+    random
+  })
+}
+
+/// Builds the initial reservoir used by Algorithm L.
+/// This is a dictionary with keys ranging from `0` up to `n - 1` where each
+/// value is the corresponding element at that position in `list`.
+///
+/// This also returns the remaining elements of `list` that didn't end up in
+/// the reservoir.
+///
+fn build_reservoir(from list: List(a), sized n: Int) -> #(Dict(Int, a), List(a)) {
+  build_reservoir_loop(list, n, dict.new())
+}
+
+fn build_reservoir_loop(
+  list: List(a),
+  size: Int,
+  reservoir: Dict(Int, a),
+) -> #(Dict(Int, a), List(a)) {
+  let reservoir_size = dict.size(reservoir)
+  case reservoir_size >= size {
+    // The reservoir already has the size we wanted.
+    True -> #(reservoir, list)
+
+    // Otherwise we add another element from the list to the reservoir
+    False ->
+      case list {
+        [] -> #(reservoir, [])
+        [first, ..rest] -> {
+          let reservoir = dict.insert(reservoir, reservoir_size, first)
+          build_reservoir_loop(rest, size, reservoir)
+        }
+      }
+  }
+}
+
+fn std_int(max: Int) -> Generator(Int) {
+  std_float()
+  |> map(fn(number) {
+    number
+    |> float.multiply(int.to_float(max))
+    |> float.floor
+    |> float.round
+  })
+}
+
+fn std_float() -> Generator(Float) {
+  float(0.0, 1.0)
+  |> then(fn(number) {
+    case number >=. 1.0 {
+      False -> constant(number)
+      True -> std_float()
+    }
+  })
+}
