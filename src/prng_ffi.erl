@@ -1,5 +1,5 @@
 -module(prng_ffi).
--export([new_seed/1, seed_to_int/1, random_int/3, random_float/3]).
+-export([new_seed/1, seed_to_int/1, random_int/3, random_float/3, encode_seed/1, decode_seed/1]).
 
 new_seed(From) ->
     {State0, Step} = next({0, 1_013_904_223}),
@@ -73,3 +73,12 @@ truncate_32(Number, to_int) ->
 truncate_32(Number, to_bit) ->
     Truncated = truncate_32(Number, to_int),
     <<Truncated:32/integer>>.
+
+encode_seed(Decoded) ->
+    {State, Step} = Decoded,
+    base64:encode(iolist_to_binary([integer_to_list(State), ",", integer_to_list(Step)])).
+
+decode_seed(Encoded) ->
+    Decoded = binary_to_list(base64:decode(Encoded)),
+    [State, Step] = string:split(Decoded, ","),
+    {list_to_integer(State), list_to_integer(Step)}.

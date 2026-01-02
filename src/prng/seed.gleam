@@ -18,3 +18,15 @@ pub fn new(int: Int) -> Seed
 pub fn random() -> Seed {
   new(int.random(4_294_967_296))
 }
+
+/// Encodes a seed.
+///
+@external(erlang, "prng_ffi", "encode_seed")
+@external(javascript, "../prng_ffi.mjs", "encode_seed")
+pub fn encode_seed(seed: Seed) -> String
+
+/// Decodes a seed.
+///
+@external(erlang, "prng_ffi", "decode_seed")
+@external(javascript, "../prng_ffi.mjs", "decode_seed")
+pub fn decode_seed(seed: String) -> Seed
