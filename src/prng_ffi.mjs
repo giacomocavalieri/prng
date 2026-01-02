@@ -50,18 +50,12 @@ export function random_float(seed, from, to) {
   return [scaled, next(new_seed)];
 }
 
-export function encode_seed(seed) {
-  const [state, step] = seed;
-  const new_state = (state + from) >>> 0;
-  return next([new_state, step]);
-}
-
 export function encode_seed(decoded) {
   const [state, step] = decoded;
-  return btoa(`${state},${step}`); 
+  return btoa(`${state},${step}`);
 }
 
 export function decode_seed(encoded) {
-  const [state, step] = atob(encoded).split(',').map(Number);
+  const [state, step] = atob(encoded).split(",").map(Number);
   return [state, step];
 }
