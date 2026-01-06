@@ -1,11 +1,9 @@
-import gleeunit/should
 import prng/random.{type Generator}
-import prng/seed
 
 fn test_generator(expected: a, generator: Generator(a), with seed: Int) -> Nil {
-  let seed = seed.new(seed)
+  let seed = random.new_seed(seed)
   let #(value, _seed) = random.step(generator, seed)
-  should.equal(value, expected)
+  assert value == expected
 }
 
 pub fn int_list_behaves_the_same_as_elm_implementation_seed_128_test() {

@@ -7,6 +7,7 @@ pub type Seed
 
 /// Creates a new seed from a given integer.
 ///
+@deprecated("use the `random.new_seed` function instead")
 @external(erlang, "prng_ffi", "new_seed")
 @external(javascript, "../prng_ffi.mjs", "new_seed")
 pub fn new(int: Int) -> Seed
@@ -15,6 +16,11 @@ pub fn new(int: Int) -> Seed
 /// having reproducible results and just need to get some values out of a
 /// generator using the `random.step` function.
 ///
+@deprecated("use the `random.new_seed` function with a fixed value instead")
 pub fn random() -> Seed {
-  new(int.random(4_294_967_296))
+  private_new(int.random(4_294_967_296))
 }
+
+@external(erlang, "prng_ffi", "new_seed")
+@external(javascript, "../prng_ffi.mjs", "new_seed")
+fn private_new(int: Int) -> Seed

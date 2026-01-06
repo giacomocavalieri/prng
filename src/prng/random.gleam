@@ -44,18 +44,9 @@
 ////   </td>
 //// </tr>
 //// <tr>
-////   <td>Getting reproducible values out of generators</td>
+////   <td>Getting values out of a generator</td>
 ////   <td>
-////     <a href="#step">step</a>,
-////     <a href="#sample">sample</a>,
-////     <a href="#to_yielder">to_yielder</a>
-////   </td>
-//// </tr>
-//// <tr>
-////   <td>Getting truly random values out of generators</td>
-////   <td>
-////     <a href="#random_sample">random_sample</a>,
-////     <a href="#to_random_yielder">to_random_yielder</a>
+////     <a href="#step">step</a>
 ////   </td>
 //// </tr>
 //// </table>
@@ -124,6 +115,10 @@ pub opaque type Generator(a) {
   Generator(step: fn(Seed) -> #(a, Seed))
 }
 
+@external(erlang, "prng_ffi", "new_seed")
+@external(javascript, "../prng_ffi.mjs", "new_seed")
+pub fn new_seed(int: Int) -> Seed
+
 // GETTING VALUES OUT OF GENERATORS --------------------------------------------
 
 /// Steps a `Generator(a)` producing a random value of type `a` using the given
@@ -161,6 +156,7 @@ pub fn step(generator: Generator(a), seed: Seed) -> #(a, Seed) {
 /// seed. It can be useful if you just need to get a single value out of
 /// a generator and need the result to be reproducible.
 ///
+@deprecated("Use the `step` function directly")
 pub fn sample(from generator: Generator(a), with seed: Seed) -> a {
   step(generator, seed).0
 }
@@ -188,13 +184,9 @@ pub fn sample(from generator: Generator(a), with seed: Seed) -> a {
 /// }
 /// ```
 ///
+@deprecated("Use the `step` function directly")
 pub fn random_sample(generator: Generator(a)) -> a {
-  // ⚠️ [ref:yielder_infinite] this is based on the assumption that, a sampled
-  // generator will always yield at least one value. This is true since the
-  // `to_yielder` implementation produces an infinite stream of values.
-  // However, if the implementation were to change this piece of code may break!
-  let assert Ok(result) = yielder.first(to_random_yielder(generator))
-  result
+  step(generator, new_seed(int.random(4_294_967_296))).0
 }
 
 /// Turns the given generator into an infinite stream of random values generated
@@ -207,8 +199,13 @@ pub fn random_sample(generator: Generator(a)) -> a {
 /// If you want to have control over the initial seed used to get the infinite
 /// sequence of values, you can use `to_yielder`.
 ///
+@deprecated("Use the `step` function directly")
 pub fn to_random_yielder(from generator: Generator(a)) -> Yielder(a) {
-  to_yielder(generator, seed.random())
+  use seed <- yielder.unfold(from: new_seed(int.random(4_294_967_296)))
+  let #(value, new_seed) = step(generator, seed)
+  // [tag:yielder_infinite] this will generate an infinite stream of values
+  // since it never returns an `yielder.Done`
+  yielder.Next(element: value, accumulator: new_seed)
 }
 
 /// Turns the given generator into an infinite stream of random values generated
@@ -221,6 +218,7 @@ pub fn to_random_yielder(from generator: Generator(a)) -> Yielder(a) {
 /// goal, you can use `to_random_yielder` which works like this function and
 /// randomly picks the initial seed.
 ///
+@deprecated("Use the `step` function directly")
 pub fn to_yielder(generator: Generator(a), seed: Seed) -> Yielder(a) {
   use seed <- yielder.unfold(from: seed)
   let #(value, new_seed) = step(generator, seed)
