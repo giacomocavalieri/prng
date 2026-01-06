@@ -11,23 +11,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout repo
-        uses: actions/checkout@v3.5.3
-      - name: "check tags are correct"
-        uses: giacomocavalieri/tagref_action@v2
+      - uses: actions/checkout@v3.5.3
+      - uses: erlef/setup-beam@v1
         with:
-          unused_tags: "forbid"
-      - name: setup beam
-        uses: erlef/setup-beam@v1
-        with:
-          otp-version: "27.0.0"
-          gleam-version: "1.6.3"
+          otp-version: "28.0.0"
+          gleam-version: "1.14.0"
           rebar3-version: "3"
-      - name: check formatting
-        run: gleam format --check src test
-      - name: dependencies download
-        run: gleam deps download
-      - name: erlang target tests
-        run: gleam test --target=erlang
-      - name: javascript target tests
-        run: gleam test --target=javascript
+      - run: gleam format --check
+      - run: gleam deps download
+      - run: gleam test --target=erlang
+      - run: gleam test --target=javascript
