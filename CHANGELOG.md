@@ -2,8 +2,9 @@
 
 ## v4.0.2 - 2026-01-06
 
-- The `to_random_yielder` and `to_yielder` functions have been deprecated in
-  favour of direct use of the `step` function.
+- The `to_random_yielder`, `to_yielder`, `sample`, and `random_sample`
+  functions have been deprecated in favour of direct use of the `step`
+  function.
 - The `seed.new` and `seed.random` functions have been deprecated in favour of
   the `random.new_seed` function.
 
