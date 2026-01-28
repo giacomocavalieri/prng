@@ -62,8 +62,6 @@ import gleam/order.{type Order, Eq, Gt, Lt}
 import gleam/pair
 import gleam/set.{type Set}
 import gleam/string
-import gleam/yielder.{type Yielder}
-import prng/seed.{type Seed}
 
 // DEFINITION ------------------------------------------------------------------
 
@@ -115,6 +113,11 @@ pub opaque type Generator(a) {
   Generator(step: fn(Seed) -> #(a, Seed))
 }
 
+/// A seed is the value that is used by the random number generation algorithm
+/// to come up with new pseudo-random values.
+///
+pub type Seed
+
 @external(erlang, "prng_ffi", "new_seed")
 @external(javascript, "../prng_ffi.mjs", "new_seed")
 pub fn new_seed(int: Int) -> Seed
@@ -148,83 +151,6 @@ pub fn new_seed(int: Int) -> Seed
 ///
 pub fn step(generator: Generator(a), seed: Seed) -> #(a, Seed) {
   generator.step(seed)
-}
-
-/// Generates a single value using the given generator and seed.
-///
-/// This is just a shorthand for the `step` function that drops the new
-/// seed. It can be useful if you just need to get a single value out of
-/// a generator and need the result to be reproducible.
-///
-@deprecated("Use the `step` function directly")
-pub fn sample(from generator: Generator(a), with seed: Seed) -> a {
-  step(generator, seed).0
-}
-
-/// Generates a single value using the given generator.
-///
-/// The initial seed is chosen randomly so you won't have control over which
-/// value is generated and may get different results each time you call this
-/// function.
-///
-/// This is useful if you want to quickly get a value out of a generator and
-/// do not care about reproducibility (if you want to decide which seed is
-/// used for the generation process you'll have to use `random.step`).
-///
-/// ## Examples
-///
-/// Imagine you want to perform some action, say only 40% of the times.
-/// Your code may look like this:
-///
-/// ```gleam
-/// let probability = random.float(0.0, 1.0)
-/// case random.random_sample(probability) <= 0.4 {
-///   True -> perform_action()
-///   False -> Nil // do nothing
-/// }
-/// ```
-///
-@deprecated("Use the `step` function directly")
-pub fn random_sample(generator: Generator(a)) -> a {
-  step(generator, new_seed(int.random(4_294_967_296))).0
-}
-
-/// Turns the given generator into an infinite stream of random values generated
-/// with it.
-///
-/// The initial seed is chosen randomly so you won't have control over which
-/// values are generated and may get different results each time you call this
-/// function.
-///
-/// If you want to have control over the initial seed used to get the infinite
-/// sequence of values, you can use `to_yielder`.
-///
-@deprecated("Use the `step` function directly")
-pub fn to_random_yielder(from generator: Generator(a)) -> Yielder(a) {
-  use seed <- yielder.unfold(from: new_seed(int.random(4_294_967_296)))
-  let #(value, new_seed) = step(generator, seed)
-  // [tag:yielder_infinite] this will generate an infinite stream of values
-  // since it never returns an `yielder.Done`
-  yielder.Next(element: value, accumulator: new_seed)
-}
-
-/// Turns the given generator into an infinite stream of random values generated
-/// with it.
-///
-/// `seed` is the seed used to get the initial random value and start the
-/// infinite sequence.
-///
-/// If you don't care about the initial seed and reproducibility is not your
-/// goal, you can use `to_random_yielder` which works like this function and
-/// randomly picks the initial seed.
-///
-@deprecated("Use the `step` function directly")
-pub fn to_yielder(generator: Generator(a), seed: Seed) -> Yielder(a) {
-  use seed <- yielder.unfold(from: seed)
-  let #(value, new_seed) = step(generator, seed)
-  // [tag:yielder_infinite] this will generate an infinite stream of values
-  // since it never returns an `yielder.Done`
-  yielder.Next(element: value, accumulator: new_seed)
 }
 
 // BASIC FFI BUILDERS ----------------------------------------------------------

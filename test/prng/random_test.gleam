@@ -1,8 +1,7 @@
 import gleam/dict
 import gleam/list
 import gleam/set
-import prng/random.{type Generator}
-import prng/seed.{type Seed}
+import prng/random.{type Generator, type Seed}
 
 // TEST HELPERS ----------------------------------------------------------------
 

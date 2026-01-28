@@ -1,5 +1,14 @@
 # Changelog
 
+## v5.0.0 - 2026-01-28
+
+- The deprecated `to_random_yielder`, `to_yielder`, `sample`, and
+  `random_sample` functions have been removed.
+- The deprecated `seed.new` and `seed.random` have been removed.
+- The `Seed` type has now been moved to the `prng/random` module.
+- The `prng/seed` module has now been removed.
+- The `gleam_yielder` dependency has been removed.
+
 ## v4.0.2 - 2026-01-06
 
 - The `to_random_yielder`, `to_yielder`, `sample`, and `random_sample`
