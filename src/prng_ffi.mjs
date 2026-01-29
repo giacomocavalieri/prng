@@ -1,21 +1,20 @@
 // A seed is just a pair [state, step]
 
 export function new_seed(from) {
-  const [state, step] = next([0, 1_013_904_223]);
+  const state = next(0);
   const new_state = (state + from) >>> 0;
-  return next([new_state, step]);
+  return next(new_state);
 }
+
+const step = 1_013_904_223;
 
 function next(seed) {
-  const [state, step] = seed;
-  const new_state = (state * 1_664_525 + step) >>> 0;
-  return [new_state, step];
+  return (seed * 1_664_525 + step) >>> 0;
 }
 
-export function seed_to_int(seed) {
-  const [state, _step] = seed;
-  const shifted_state = state >>> ((state >>> 28) + 4);
-  const word = (state ^ shifted_state) * 277_803_737;
+function seed_to_int(seed) {
+  const shifted_state = seed >>> ((seed >>> 28) + 4);
+  const word = (seed ^ shifted_state) * 277_803_737;
   return ((word >>> 22) ^ word) >>> 0;
 }
 

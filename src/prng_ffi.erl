@@ -1,12 +1,12 @@
 -module(prng_ffi).
--export([new_seed/1, seed_to_int/1, random_int/3, random_float/3]).
+-export([new_seed/1, random_int/3, random_float/3]).
 
 new_seed(From) ->
-    {State0, Step} = next({0, 1_013_904_223}),
+    State0 = next(0),
     State1 = truncate_32(State0 + From),
-    next({State1, Step}).
+    next(State1).
 
-seed_to_int({State, _Step}) ->
+seed_to_int(State) ->
     ShiftedState = urs(State, urs(State, 28) + 4),
     Word = trunc(expand_to_64(State bxor ShiftedState) * 277_803_737.0),
     truncate_32(urs(Word, 22) bxor Word).
@@ -44,9 +44,11 @@ account_for_bias(Threshold, Seed, From, Range) ->
             {From + (X rem Range), IterationSeed}
     end.
 
-next({State, Step}) ->
-    NewState = urs((State * 1_664_525.0) + Step, 0),
-    {NewState, Step}.
+-define(STEP, 1_013_904_223).
+
+next(State) ->
+    NewState = urs((State * 1_664_525.0) + ?STEP, 0),
+    NewState.
 
 % unsigned right shift
 urs(Number, By) ->
@@ -58,9 +60,9 @@ expand_to_64(Number) ->
     <<NumberBits:32/bitstring>> = <<Number:32/integer>>,
     <<First:1, _:31/bitstring>> = NumberBits,
     Pad =
-        case First =:= 1 of
-            true -> <<-1:32>>;
-            false -> <<0:32>>
+        case First of
+            1 -> <<-1:32>>;
+            _ -> <<0:32>>
         end,
     <<Result:64/signed-integer>> = <<Pad/bitstring, NumberBits/bitstring>>,
     Result.
