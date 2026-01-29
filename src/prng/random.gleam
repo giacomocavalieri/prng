@@ -58,8 +58,6 @@ import gleam/dict.{type Dict}
 import gleam/float
 import gleam/int
 import gleam/list
-import gleam/order.{type Order, Eq, Gt, Lt}
-import gleam/pair
 import gleam/set.{type Set}
 import gleam/string
 
@@ -180,15 +178,9 @@ pub const max_int = 2_147_483_647
 /// ```
 ///
 pub fn int(from: Int, to: Int) -> Generator(Int) {
-  use seed <- Generator
-  let #(low, high) = sort_ascending(from, to, int.compare)
-  random_int(seed, low, high)
-}
-
-fn sort_ascending(one: a, other: a, with compare: fn(a, a) -> Order) -> #(a, a) {
-  case compare(one, other) {
-    Lt | Eq -> #(one, other)
-    Gt -> #(other, one)
+  case from <= to {
+    True -> Generator(random_int(_, from, to))
+    False -> Generator(random_int(_, to, from))
   }
 }
 
@@ -205,9 +197,10 @@ fn random_int(seed: Seed, from: Int, to: Int) -> #(Int, Seed)
 /// ```
 ///
 pub fn float(from: Float, to: Float) -> Generator(Float) {
-  use seed <- Generator
-  let #(low, high) = sort_ascending(from, to, float.compare)
-  random_float(seed, low, high)
+  case from <=. to {
+    True -> Generator(random_float(_, from, to))
+    False -> Generator(random_float(_, to, from))
+  }
 }
 
 @external(erlang, "prng_ffi", "random_float")
@@ -227,8 +220,7 @@ fn random_float(seed: Seed, from: Float, to: Float) -> #(Float, Seed)
 /// ```
 ///
 pub fn constant(value: a) -> Generator(a) {
-  use seed <- Generator
-  #(value, seed)
+  Generator(fn(seed) { #(value, seed) })
 }
 
 /// Generates values from the given ones with an equal probability.
@@ -264,7 +256,7 @@ pub fn constant(value: a) -> Generator(a) {
 /// ```
 ///
 pub fn uniform(first: a, others: List(a)) -> Generator(a) {
-  weighted(#(1.0, first), list.map(others, pair.new(1.0, _)))
+  weighted(#(1.0, first), list.map(others, fn(value) { #(1.0, value) }))
 }
 
 /// This function works exactly like `uniform` but will return an `Error(Nil)`
@@ -342,9 +334,16 @@ pub fn try_uniform(options: List(a)) -> Result(Generator(a), Nil) {
 /// `weight` / `total`.
 ///
 pub fn weighted(first: #(Float, a), others: List(#(Float, a))) -> Generator(a) {
-  let normalise = fn(pair) { float.absolute_value(pair.first(pair)) }
-  let total = normalise(first) +. float.sum(list.map(others, normalise))
+  let total = sum_absolute_values(others, float.absolute_value(first.0))
   map(float(0.0, total), get_by_weight(first, others, _))
+}
+
+fn sum_absolute_values(list: List(#(Float, a)), acc: Float) -> Float {
+  case list {
+    [] -> acc
+    [#(value, _), ..rest] ->
+      sum_absolute_values(rest, acc +. float.absolute_value(value))
+  }
 }
 
 /// This function works exactly like `weighted` but will return an `Error(Nil)`
@@ -396,9 +395,9 @@ fn get_by_weight(
     [] -> value
     [second, ..rest] -> {
       let positive_weight = float.absolute_value(weight)
-      case float.compare(countdown, positive_weight) {
-        Lt | Eq -> value
-        Gt -> get_by_weight(second, rest, countdown -. positive_weight)
+      case countdown >. positive_weight {
+        False -> value
+        True -> get_by_weight(second, rest, countdown -. positive_weight)
       }
     }
   }
@@ -446,8 +445,11 @@ pub fn choose(one: a, or other: a) -> Generator(a) {
 /// // -> #(3, 0.22)
 /// ```
 ///
+@deprecated("use `random.then` to compose multiple generators")
 pub fn pair(one: Generator(a), with other: Generator(b)) -> Generator(#(a, b)) {
-  map2(one, other, with: pair.new)
+  use n <- then(one)
+  use m <- then(other)
+  constant(#(n, m))
 }
 
 /// Generates a lists of a fixed size; its values are generated using the
@@ -469,8 +471,7 @@ pub fn fixed_size_list(
   from generator: Generator(a),
   of length: Int,
 ) -> Generator(List(a)) {
-  use seed <- Generator
-  do_fixed_size_list([], seed, generator, length)
+  Generator(do_fixed_size_list([], _, generator, length))
 }
 
 fn do_fixed_size_list(
@@ -498,8 +499,7 @@ pub fn list(generator: Generator(a)) -> Generator(List(a)) {
   // ⚠️ There might be a more thoughtful implementation that has higher chances
   // of returning empty lists (or shorter ones), for now I think this is more
   // than enough
-  use size <- then(int(0, 32))
-  fixed_size_list(from: generator, of: size)
+  then(int(0, 32), fixed_size_list(from: generator, of: _))
 }
 
 /// Generates a `Dict(k, v)` where each key value pair is generated using the
@@ -541,14 +541,22 @@ fn do_fixed_size_dict(
     True ->
       // ^-- if the key is already present in the map we can't add it and we
       //     increase the number of failed attempts at generating a distinct key
-      { consecutive_attempts + 1 }
-      |> do_fixed_size_dict(keys, values, size, unique_keys, _, acc)
+      do_fixed_size_dict(
+        keys,
+        values,
+        size,
+        unique_keys,
+        consecutive_attempts + 1,
+        acc,
+      )
+
     False -> {
       // ^-- if we could indeed generate a new key, we set the number of failed
       //     attempts to zero and are ready to start again with a new one
       use value <- then(values)
-      dict.insert(acc, key, value)
-      |> do_fixed_size_dict(keys, values, size, unique_keys + 1, 0, _)
+      let unique_keys = unique_keys + 1
+      let acc = dict.insert(acc, key, value)
+      do_fixed_size_dict(keys, values, size, unique_keys, 0, acc)
     }
   }
 }
@@ -576,8 +584,7 @@ pub fn fixed_size_set(
   from generator: Generator(a),
   of size: Int,
 ) -> Generator(Set(a)) {
-  int.max(size, 0)
-  |> do_fixed_size_set(generator, _, 0, 0, set.new())
+  do_fixed_size_set(generator, int.max(size, 0), 0, 0, set.new())
 }
 
 fn do_fixed_size_set(
@@ -603,13 +610,20 @@ fn do_fixed_size_set(
     True ->
       // ^-- if the item is already present in the set we can't add it and we
       //     increase the number of failed attempts at generating a new item
-      { consecutive_attempts + 1 }
-      |> do_fixed_size_set(generator, size, unique_items, _, acc)
+      do_fixed_size_set(
+        generator,
+        size,
+        unique_items,
+        consecutive_attempts + 1,
+        acc,
+      )
+
     False -> {
       // ^-- if we could indeed generate a new item, we set the number of failed
       //     attempts to zero and are ready to start again with a new one
-      set.insert(acc, item)
-      |> do_fixed_size_set(generator, size, unique_items + 1, 0, _)
+      let unique_items = unique_items + 1
+      let acc = set.insert(acc, item)
+      do_fixed_size_set(generator, size, unique_items, 0, acc)
     }
   }
 }
@@ -671,10 +685,10 @@ pub fn then(
   generator: Generator(a),
   do generator_from: fn(a) -> Generator(b),
 ) -> Generator(b) {
-  use seed <- Generator
-  let #(value, seed) = step(generator, seed)
-  generator_from(value)
-  |> step(seed)
+  Generator(fn(seed) {
+    let #(value, seed) = step(generator, seed)
+    step(generator_from(value), seed)
+  })
 }
 
 /// Transforms the values produced by a generator using the given function.
@@ -695,16 +709,17 @@ pub fn then(
 /// original generator produces a 2, `bool_generator` will produce `False`.
 ///
 pub fn map(generator: Generator(a), with fun: fn(a) -> b) -> Generator(b) {
-  use seed <- Generator
-  let #(value, seed) = step(generator, seed)
-  #(fun(value), seed)
+  Generator(fn(seed) {
+    let #(value, seed) = step(generator, seed)
+    #(fun(value), seed)
+  })
 }
 
 /// Combines two generators into a single one. The resulting generator produces
 /// values obtained by applying `fun` to the values generated by the given
 /// generators.
 ///
-/// ## Examples
+/// ## Examples
 ///
 /// Imagine you need to generate random points in a 2D space:
 ///
@@ -738,15 +753,17 @@ pub fn map(generator: Generator(a), with fun: fn(a) -> b) -> Generator(b) {
 /// > Usually `map2`/`map3`/... will be more than enough if you just need to
 /// > combine simple generators into more complex ones.
 ///
+@deprecated("use `random.then` to compose multiple generators")
 pub fn map2(
   one: Generator(a),
   other: Generator(b),
   with fun: fn(a, b) -> c,
 ) -> Generator(c) {
-  use seed <- Generator
-  let #(a, seed) = step(one, seed)
-  let #(b, seed) = step(other, seed)
-  #(fun(a, b), seed)
+  Generator(fn(seed) {
+    let #(a, seed) = step(one, seed)
+    let #(b, seed) = step(other, seed)
+    #(fun(a, b), seed)
+  })
 }
 
 /// Combines three generators into a single one. The resulting generator
@@ -782,23 +799,26 @@ pub fn map2(
 ///   )
 /// ```
 ///
+@deprecated("use `random.then` to compose multiple generators")
 pub fn map3(
   one: Generator(a),
   two: Generator(b),
   three: Generator(c),
   with fun: fn(a, b, c) -> d,
 ) -> Generator(d) {
-  use seed <- Generator
-  let #(a, seed) = step(one, seed)
-  let #(b, seed) = step(two, seed)
-  let #(c, seed) = step(three, seed)
-  #(fun(a, b, c), seed)
+  Generator(fn(seed) {
+    let #(a, seed) = step(one, seed)
+    let #(b, seed) = step(two, seed)
+    let #(c, seed) = step(three, seed)
+    #(fun(a, b, c), seed)
+  })
 }
 
 /// Combines four generators into a single one. The resulting generator
 /// produces values obtained by applying `fun` to the values generated by the
 /// given generators.
 ///
+@deprecated("use `random.then` to compose multiple generators")
 pub fn map4(
   one: Generator(a),
   two: Generator(b),
@@ -806,12 +826,13 @@ pub fn map4(
   four: Generator(d),
   with fun: fn(a, b, c, d) -> e,
 ) -> Generator(e) {
-  use seed <- Generator
-  let #(a, seed) = step(one, seed)
-  let #(b, seed) = step(two, seed)
-  let #(c, seed) = step(three, seed)
-  let #(d, seed) = step(four, seed)
-  #(fun(a, b, c, d), seed)
+  Generator(fn(seed) {
+    let #(a, seed) = step(one, seed)
+    let #(b, seed) = step(two, seed)
+    let #(c, seed) = step(three, seed)
+    let #(d, seed) = step(four, seed)
+    #(fun(a, b, c, d), seed)
+  })
 }
 
 /// Combines five generators into a single one. The resulting generator
@@ -821,6 +842,7 @@ pub fn map4(
 /// > There's no `map6`, `map7`, and so on. If you feel like you need to compose
 /// > together even more generators, you can use the `random.then` function.
 ///
+@deprecated("use `random.then` to compose multiple generators")
 pub fn map5(
   one: Generator(a),
   two: Generator(b),
@@ -829,13 +851,14 @@ pub fn map5(
   five: Generator(e),
   with fun: fn(a, b, c, d, e) -> f,
 ) -> Generator(f) {
-  use seed <- Generator
-  let #(a, seed) = step(one, seed)
-  let #(b, seed) = step(two, seed)
-  let #(c, seed) = step(three, seed)
-  let #(d, seed) = step(four, seed)
-  let #(e, seed) = step(five, seed)
-  #(fun(a, b, c, d, e), seed)
+  Generator(fn(seed) {
+    let #(a, seed) = step(one, seed)
+    let #(b, seed) = step(two, seed)
+    let #(c, seed) = step(three, seed)
+    let #(d, seed) = step(four, seed)
+    let #(e, seed) = step(five, seed)
+    #(fun(a, b, c, d, e), seed)
+  })
 }
 
 // CHARACTERS AND STRINGS ------------------------------------------------------

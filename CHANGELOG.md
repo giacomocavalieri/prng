@@ -1,5 +1,21 @@
 # Changelog
 
+## v5.0.1 - unreleased
+
+- The `map2`, `map3`, `map4`, and `pair` functions in the `prng/random` module
+  have all been deprecated in favour of using the `then` function. For example,
+  to write a generator that produces pairs of random values you would do:
+
+  ```gleam
+  import prng/random.{type Generator}
+
+  fn int_and_string() -> Generator(#(Int, String)) {
+    use int <- random.then(random.int())
+    use string <- random.then(random.string())
+    random.constant(#(int, string))
+  }
+  ```
+
 ## v5.0.0 - 2026-01-28
 
 - The deprecated `to_random_yielder`, `to_yielder`, `sample`, and

@@ -164,13 +164,6 @@ pub fn map_behaves_the_same_as_then_and_constant_test() {
   behaves(gen1, like: gen2)
 }
 
-pub fn pair_behaves_the_same_as_map2_test() {
-  let numbers = random.int(random.min_int, random.max_int)
-  let gen1 = random.pair(numbers, numbers)
-  let gen2 = random.map2(numbers, numbers, fn(m, n) { #(m, n) })
-  behaves(gen1, like: gen2)
-}
-
 pub fn choose_behaves_the_same_as_uniform_test() {
   let gen1 = random.choose(1, 2)
   let gen2 = random.uniform(1, [2])
@@ -205,35 +198,6 @@ pub fn constant_behaves_the_same_as_constant_map_test() {
   let gen2 =
     random.map(random.int(random.min_int, random.max_int), fn(_) { 11 })
   behaves(gen1, like: gen2)
-}
-
-pub fn map2_maps_the_generated_value_test() {
-  let assert [gen1, gen2] = list.map([1, 2], random.constant)
-  let examples = random.map2(gen1, gen2, fn(a, b) { #(a, b) })
-  check(for_all: examples, that: fn(value) { value == #(1, 2) })
-}
-
-pub fn map3_maps_the_generated_value_test() {
-  let assert [gen1, gen2, gen3] = list.map([1, 2, 3], random.constant)
-  let examples = random.map3(gen1, gen2, gen3, fn(a, b, c) { #(a, b, c) })
-  check(for_all: examples, that: fn(value) { value == #(1, 2, 3) })
-}
-
-pub fn map4_maps_the_generated_value_test() {
-  let assert [gen1, gen2, gen3, gen4] = list.map([1, 2, 3, 4], random.constant)
-  let examples =
-    random.map4(gen1, gen2, gen3, gen4, fn(a, b, c, d) { #(a, b, c, d) })
-  check(for_all: examples, that: fn(value) { value == #(1, 2, 3, 4) })
-}
-
-pub fn map5_maps_the_generated_value_test() {
-  let assert [gen1, gen2, gen3, gen4, gen5] =
-    list.map([1, 2, 3, 4, 5], random.constant)
-  let examples =
-    random.map5(gen1, gen2, gen3, gen4, gen5, fn(a, b, c, d, e) {
-      #(a, b, c, d, e)
-    })
-  check(for_all: examples, that: fn(value) { value == #(1, 2, 3, 4, 5) })
 }
 
 pub fn a_fixed_size_string_of_size_0_is_the_empty_string_test() {
