@@ -28,12 +28,10 @@ const number_of_samples = 2000
 
 /// Checks a property holds for a generator.
 ///
-fn check(for_all generator: Generator(a), that property: fn(a) -> Bool) -> Nil {
+fn check(for_all generator: Generator(a), that property: fn(a) -> Nil) -> Nil {
   let seed = random.new_seed(11)
   let samples = sample(number_of_samples, from: generator, with: seed)
-  list.each(samples, fn(sample) {
-    assert property(sample)
-  })
+  list.each(samples, property)
 }
 
 /// Checks that two generators will produce exactly the same results.
@@ -54,46 +52,66 @@ pub fn is_between_f(lower: Float, number: Float, upper: Float) -> Bool {
 }
 
 pub fn int_is_always_in_the_specified_range_test() {
-  check(for_all: random.int(11, 11), that: fn(n) { n == 11 })
-  check(for_all: random.int(-10, 10), that: is_between(-10, _, 10))
+  check(for_all: random.int(11, 11), that: fn(n) {
+    assert n == 11
+  })
+  check(for_all: random.int(-10, 10), that: fn(n) {
+    assert is_between(-10, n, 10)
+  })
 }
 
 pub fn float_is_always_in_the_specified_range_test() {
-  check(for_all: random.float(11.0, 11.0), that: fn(n) { n == 11.0 })
-  check(for_all: random.float(-10.0, 10.0), that: is_between_f(-10.0, _, 10.0))
+  check(for_all: random.float(11.0, 11.0), that: fn(n) {
+    assert n == 11.0
+  })
+  check(for_all: random.float(-10.0, 10.0), that: fn(n) {
+    assert is_between_f(-10.0, n, 10.0)
+  })
 }
 
 pub fn constant_always_returns_the_same_value_test() {
-  check(for_all: random.constant(11), that: fn(n) { n == 11 })
+  check(for_all: random.constant(11), that: fn(n) {
+    assert n == 11
+  })
 }
 
 pub fn map_returns_the_mapped_value_test() {
   let cool_people = random.map(random.int(1, 2), fn(_) { "Louis" })
-  check(for_all: cool_people, that: fn(name) { name == "Louis" })
+  check(for_all: cool_people, that: fn(name) {
+    assert name == "Louis"
+  })
 }
 
 pub fn weighted_never_returns_value_with_zero_weight_test() {
   let languages = random.weighted(#(1.0, "Gleam"), [#(0.0, "TypeScript")])
-  check(for_all: languages, that: fn(language) { language == "Gleam" })
+  check(for_all: languages, that: fn(language) {
+    assert language == "Gleam"
+  })
 }
 
 pub fn fixed_size_list_generates_lists_of_the_given_length_test() {
   let empty_lists = random.fixed_size_list(random.constant(11), of: 0)
-  check(for_all: empty_lists, that: fn(list) { list.is_empty(list) })
+  check(for_all: empty_lists, that: fn(list) {
+    assert list.is_empty(list)
+  })
 
   let empty_lists = random.fixed_size_list(random.constant(11), of: -1)
-  check(for_all: empty_lists, that: fn(list) { list.is_empty(list) })
+  check(for_all: empty_lists, that: fn(list) {
+    assert list.is_empty(list)
+  })
 
   let lists = random.fixed_size_list(random.constant(11), of: 10)
   check(for_all: lists, that: fn(list) {
-    list.length(list) == 10 && list.all(list, fn(n) { n == 11 })
+    assert list.length(list) == 10
+    assert list.all(list, fn(n) { n == 11 })
   })
 }
 
 pub fn list_returns_list_in_range_0_32_test() {
   check(for_all: random.list(random.int(1, 10)), that: fn(list) {
     let length = list.length(list)
-    0 <= length && length <= 32
+    assert 0 <= length
+    assert length <= 32
   })
 }
 
@@ -102,22 +120,28 @@ pub fn fixed_size_dict_generates_maps_of_at_most_the_given_length_test() {
   let values = random.int(1, 10)
 
   let empty_maps = random.fixed_size_dict(keys, values, of: 0)
-  check(for_all: empty_maps, that: fn(map) { list.is_empty(dict.keys(map)) })
+  check(for_all: empty_maps, that: fn(map) {
+    assert list.is_empty(dict.keys(map))
+  })
 
   let empty_maps = random.fixed_size_dict(keys, values, of: -1)
-  check(for_all: empty_maps, that: fn(map) { list.is_empty(dict.keys(map)) })
+  check(for_all: empty_maps, that: fn(map) {
+    assert list.is_empty(dict.keys(map))
+  })
 
   let maps = random.fixed_size_dict(keys, values, of: 10)
   check(for_all: maps, that: fn(map) {
     let length = list.length(dict.keys(map))
-    0 < length && length <= 10
+    assert 0 < length
+    assert length <= 10
   })
 }
 
 pub fn dict_returns_maps_in_range_0_32_test() {
   check(for_all: random.dict(random.string(), random.int(1, 10)), that: fn(map) {
     let length = list.length(dict.keys(map))
-    0 <= length && length <= 32
+    assert 0 <= length
+    assert length <= 32
   })
 }
 
@@ -125,36 +149,48 @@ pub fn fixed_size_set_generates_sets_of_at_most_the_given_length_test() {
   let values = random.string()
 
   let empty_sets = random.fixed_size_set(values, of: 0)
-  check(for_all: empty_sets, that: fn(set) { set.size(set) == 0 })
+  check(for_all: empty_sets, that: fn(set) {
+    assert set.size(set) == 0
+  })
 
   let empty_sets = random.fixed_size_set(values, of: -1)
-  check(for_all: empty_sets, that: fn(set) { set.size(set) == 0 })
+  check(for_all: empty_sets, that: fn(set) {
+    assert set.size(set) == 0
+  })
 
   let sets = random.fixed_size_set(values, of: 10)
   check(for_all: sets, that: fn(set) {
-    0 < set.size(set) && set.size(set) <= 10
+    assert 0 < set.size(set)
+    assert set.size(set) <= 10
   })
 }
 
 pub fn set_returns_sets_in_range_0_32_test() {
   check(for_all: random.set(random.string()), that: fn(set) {
-    0 <= set.size(set) && set.size(set) <= 32
+    assert 0 <= set.size(set)
+    assert set.size(set) <= 32
   })
 }
 
 pub fn uniform_generates_values_from_the_given_list_test() {
   let examples = random.uniform(1, [2, 3])
-  check(for_all: examples, that: fn(n) { n == 1 || n == 2 || n == 3 })
+  check(for_all: examples, that: fn(n) {
+    assert n == 1 || n == 2 || n == 3
+  })
 }
 
 pub fn then_returns_the_new_generator_test() {
   let examples = random.then(random.constant(11), fn(_) { random.constant(12) })
-  check(for_all: examples, that: fn(n) { n == 12 })
+  check(for_all: examples, that: fn(n) {
+    assert n == 12
+  })
 }
 
 pub fn map_maps_the_generated_value_test() {
   let examples = random.map(random.constant(11), fn(n) { n + 1 })
-  check(for_all: examples, that: fn(n) { n == 12 })
+  check(for_all: examples, that: fn(n) {
+    assert n == 12
+  })
 }
 
 pub fn map_behaves_the_same_as_then_and_constant_test() {
@@ -201,5 +237,7 @@ pub fn constant_behaves_the_same_as_constant_map_test() {
 }
 
 pub fn a_fixed_size_string_of_size_0_is_the_empty_string_test() {
-  check(for_all: random.fixed_size_string(0), that: fn(string) { string == "" })
+  check(for_all: random.fixed_size_string(0), that: fn(string) {
+    assert string == ""
+  })
 }
