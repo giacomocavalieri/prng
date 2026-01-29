@@ -28,8 +28,7 @@
 ////   <td>Transform and compose generators</td>
 ////   <td>
 ////     <a href="#map">map</a>,
-////     <a href="#then">then</a>,
-////     <a href="#pair">pair</a>
+////     <a href="#then">then</a>
 ////   </td>
 //// </tr>
 //// <tr>
@@ -643,6 +642,27 @@ pub fn set(generator: Generator(a)) -> Generator(Set(a)) {
 ///
 pub fn bit_array() -> Generator(BitArray) {
   map(string(), bit_array.from_string)
+}
+
+/// Generates lists with the same element of the given one, but in a random
+/// order.
+///
+pub fn shuffle(list: List(a)) -> Generator(List(a)) {
+  do_shuffle(list, [])
+}
+
+fn do_shuffle(list: List(a), acc: List(#(Float, a))) -> Generator(List(a)) {
+  case list {
+    [] ->
+      list.sort(acc, fn(one, other) { float.compare(one.0, other.0) })
+      |> list.map(fn(pair) { pair.1 })
+      |> constant
+
+    [first, ..rest] -> {
+      use order <- then(float(0.0, 1.0))
+      do_shuffle(rest, [#(order, first), ..acc])
+    }
+  }
 }
 
 // MAPPING ---------------------------------------------------------------------

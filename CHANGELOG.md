@@ -2,6 +2,7 @@
 
 ## v5.0.1 - unreleased
 
+- The `prng/random` module gains the `shuffle` function.
 - The `map2`, `map3`, `map4`, and `pair` functions in the `prng/random` module
   have all been deprecated in favour of using the `then` function. For example,
   to write a generator that produces pairs of random values you would do:

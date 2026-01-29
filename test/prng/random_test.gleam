@@ -217,6 +217,27 @@ pub fn uniform_behaves_like_weighted_when_all_weights_are_equal_test() {
   behaves(gen1, like: gen2)
 }
 
+pub fn shuffle_test() {
+  let list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  check(for_all: random.shuffle(list), that: fn(shuffled) {
+    // Technically we might end up generating a list that is exactly the same
+    // as the original one. But the chances are so vanishingly low that I can
+    // accept the test failing once in a lifetime.
+    assert shuffled != list
+    assert list.length(shuffled) == 10
+    assert list.contains(shuffled, 1)
+    assert list.contains(shuffled, 2)
+    assert list.contains(shuffled, 3)
+    assert list.contains(shuffled, 4)
+    assert list.contains(shuffled, 5)
+    assert list.contains(shuffled, 6)
+    assert list.contains(shuffled, 7)
+    assert list.contains(shuffled, 8)
+    assert list.contains(shuffled, 9)
+    assert list.contains(shuffled, 10)
+  })
+}
+
 pub fn uniform_behaves_like_try_uniform_test() {
   let gen1 = random.uniform(1, [2])
   let assert Ok(gen2) = random.try_uniform([1, 2])
