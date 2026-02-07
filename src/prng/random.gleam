@@ -652,6 +652,7 @@ pub fn shuffle(list: List(a)) -> Generator(List(a)) {
 }
 
 fn do_shuffle(list: List(a), acc: List(#(Float, a))) -> Generator(List(a)) {
+  let slightly_less_than_1 = 1.0 -. min_positive
   case list {
     [] ->
       list.sort(acc, fn(one, other) { float.compare(one.0, other.0) })
@@ -659,9 +660,104 @@ fn do_shuffle(list: List(a), acc: List(#(Float, a))) -> Generator(List(a)) {
       |> constant
 
     [first, ..rest] -> {
-      use order <- then(float(0.0, 1.0))
+      use order <- then(float(0.0, slightly_less_than_1))
       do_shuffle(rest, [#(order, first), ..acc])
     }
+  }
+}
+
+/// Generates random samples of up to n elements from a list using reservoir
+/// sampling via [Algorithm L](https://en.wikipedia.org/wiki/Reservoir_sampling#Optimal:_Algorithm_L).
+/// Returns an empty list if the sample size is less than or equal to 0.
+///
+/// Order is not random, only selection is.
+///
+/// ## Examples
+///
+/// ```gleam
+/// sample([1, 2, 3, 4, 5], 3)
+/// // some samples could be: [2, 4, 5], [1, 4, 5], ...
+/// ```
+///
+pub fn sample(from list: List(a), up_to n: Int) -> Generator(List(a)) {
+  let #(reservoir, rest) = build_reservoir(from: list, sized: n)
+  case dict.is_empty(reservoir) {
+    // If the reservoire is empty that means we were asking to sample 0 or
+    // less items. That doesn't make much sense, so we just return an empty
+    // list.
+    True -> constant([])
+
+    // Otherwise we keep looping over the remaining part of the list replacing
+    // random elements in the reservoir.
+    False -> {
+      use log_random <- then(log_random())
+      let w = float.exponential(log_random /. int.to_float(n))
+      sample_loop(rest, reservoir, n, w) |> map(dict.values)
+    }
+  }
+}
+
+fn sample_loop(
+  list: List(a),
+  reservoir: Dict(Int, a),
+  n: Int,
+  w: Float,
+) -> Generator(Dict(Int, a)) {
+  let assert Ok(log) = float.logarithm(1.0 -. w)
+  use log_randon <- then(log_random())
+  let skip = float.round(float.floor(log_randon /. log))
+
+  case list.drop(list, skip) {
+    [] -> constant(reservoir)
+    [first, ..rest] -> {
+      use position <- then(int(0, n - 1))
+      use log_random <- then(log_random())
+      let reservoir = dict.insert(reservoir, position, first)
+      let w = w *. float.exponential(log_random /. int.to_float(n))
+      sample_loop(rest, reservoir, n, w)
+    }
+  }
+}
+
+const min_positive = 2.2250738585072014e-308
+
+fn log_random() -> Generator(Float) {
+  let slightly_less_than_1 = 1.0 -. min_positive
+  use float <- then(float(0.0, slightly_less_than_1))
+  let assert Ok(random) = float.logarithm(float +. min_positive)
+  constant(random)
+}
+
+/// Builds the initial reservoir used by Algorithm L.
+/// This is a dictionary with keys ranging from `0` up to `n - 1` where each
+/// value is the corresponding element at that position in `list`.
+///
+/// This also returns the remaining elements of `list` that didn't end up in
+/// the reservoir.
+///
+fn build_reservoir(from list: List(a), sized n: Int) -> #(Dict(Int, a), List(a)) {
+  build_reservoir_loop(list, n, dict.new())
+}
+
+fn build_reservoir_loop(
+  list: List(a),
+  size: Int,
+  reservoir: Dict(Int, a),
+) -> #(Dict(Int, a), List(a)) {
+  let reservoir_size = dict.size(reservoir)
+  case reservoir_size >= size {
+    // The reservoir already has the size we wanted.
+    True -> #(reservoir, list)
+
+    // Otherwise we add another element from the list to the reservoir
+    False ->
+      case list {
+        [] -> #(reservoir, [])
+        [first, ..rest] -> {
+          let reservoir = dict.insert(reservoir, reservoir_size, first)
+          build_reservoir_loop(rest, size, reservoir)
+        }
+      }
   }
 }
 

@@ -1,4 +1,5 @@
 import gleam/dict
+import gleam/int
 import gleam/list
 import gleam/set
 import prng/random.{type Generator, type Seed}
@@ -261,4 +262,33 @@ pub fn a_fixed_size_string_of_size_0_is_the_empty_string_test() {
   check(for_all: random.fixed_size_string(0), that: fn(string) {
     assert string == ""
   })
+}
+
+pub fn random_sample_test() {
+  check(for_all: random.sample([], up_to: 3), that: fn(list) {
+    assert list == []
+  })
+
+  check(for_all: random.sample([1], up_to: 1), that: fn(sample) {
+    assert sample == [1]
+  })
+
+  check(for_all: random.sample([1, 2, 3], up_to: 0), that: fn(sample) {
+    assert sample == []
+  })
+
+  check(for_all: random.sample([1, 2, 3], up_to: -1), that: fn(sample) {
+    assert sample == []
+  })
+
+  check(for_all: random.sample([1, 2, 3], up_to: 5), that: fn(sample) {
+    assert list.sort(sample, int.compare) == [1, 2, 3]
+  })
+
+  check(
+    for_all: random.sample([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], up_to: 4),
+    that: fn(sample) {
+      assert list.length(sample) == 4
+    },
+  )
 }
