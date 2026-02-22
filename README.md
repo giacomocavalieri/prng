@@ -21,7 +21,6 @@ And you can start generating random values:
 
 ```gleam
 import prng/random
-import prng/seed
 
 pub fn main() {
   // A generator describes which kind of random values to produce:
@@ -29,8 +28,8 @@ pub fn main() {
 
   // One can take values out of a generator using the `step` function.
   // Using the same initial seed will always produce the same value!
-  let #(value, _) = random.step(generator, seed.new(11))
-  let #(other_value, _) = random.step(generator, seed.new(11))
+  let #(value, _) = random.step(generator, random.new_seed(11))
+  let #(other_value, _) = random.step(generator, random.new_seed(11))
   assert value == 10
   assert other_value == 10
 }
@@ -42,7 +41,7 @@ generate a new pseudo-random value each time you call it:
 ```gleam
 pub fn main() {
   let generator = random.int(0, 10)
-  let #(value, next_seed) = random.step(generator, seed.new(11))
+  let #(value, next_seed) = random.step(generator, random.new_seed(11))
   let #(other_value, _) = random.step(generator, next_seed)
   assert value == 10
   assert other_value == 4

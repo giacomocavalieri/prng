@@ -84,7 +84,7 @@ import gleam/string
 /// import prng/random
 /// import prng/seed
 ///
-/// let #(roll_result, updated_seed) = dice_roll |> random.step(seed.new(11))
+/// let #(roll_result, updated_seed) = dice_roll |> random.step(random.new_seed(11))
 ///
 /// roll_result
 /// // -> 3
@@ -98,7 +98,7 @@ import gleam/string
 /// get different pseudo-random results:
 ///
 /// ```gleam
-/// let initial_seed = seed.new(11)
+/// let initial_seed = random.new_seed(11)
 /// let #(first_roll, new_seed) = dice_roll |> random.step(initial_seed)
 /// let #(second_roll, _) = dice_roll |> random.step(new_seed)
 ///
@@ -131,13 +131,12 @@ pub fn new_seed(int: Int) -> Seed
 /// subsequent calls to `step` to get other random values.
 ///
 /// Stepping a generator by hand can be quite cumbersome, so I recommend you
-/// try [`to_yielder`](#to_yielder),
-/// [`to_random_yielder`](#to_random_yielder), or [`sample`](#sample) instead.
+/// try [`sample`](#sample) instead.
 ///
 /// ## Examples
 ///
 /// ```gleam
-/// let initial_seed = seed.new(11)
+/// let initial_seed = random.new_seed(11)
 /// let dice_roll = random.int(1, 6)
 /// let #(first_roll, new_seed) = random.step(dice_roll, initial_seed)
 /// let #(second_roll, _) = random.step(dice_roll, new_seed)
