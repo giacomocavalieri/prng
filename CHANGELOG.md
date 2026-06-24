@@ -1,5 +1,10 @@
 # Changelog
 
+## v6.0.0 - 2026-06-24
+
+- The deprecated `map2`, `map3`, `map4`, and `pair` functions in the
+  `prng/random` module have been removed.
+
 ## v5.1.0 - 2026-02-07
 
 - The `prng/random` module gains the `shuffle` and `sample` functions.
