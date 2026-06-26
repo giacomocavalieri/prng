@@ -61,7 +61,7 @@ expand_to_64(Number) ->
     <<First:1, _:31/bitstring>> = NumberBits,
     Pad =
         case First of
-            1 -> <<-1:32>>;
+            1 -> <<-1:32/signed-integer>>;
             _ -> <<0:32>>
         end,
     <<Result:64/signed-integer>> = <<Pad/bitstring, NumberBits/bitstring>>,
