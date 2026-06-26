@@ -6,7 +6,11 @@ import prng/random.{type Generator, type Seed}
 
 // TEST HELPERS ----------------------------------------------------------------
 
-fn sample(values: Int, from generator: Generator(a), with seed: Seed) -> List(a) {
+fn sample(
+  values: Int,
+  from generator: Generator(a),
+  with seed: Seed,
+) -> List(a) {
   sample_loop(values, generator, seed, [])
 }
 
